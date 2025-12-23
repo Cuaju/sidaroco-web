@@ -1,0 +1,21 @@
+@use "./colors.scss" as *;
+
+@font-face {
+  font-family: "Hanno";
+  src: url("../assets/fonts/HannoRegular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+html, body {
+  font-family: "Hanno", system-ui, Arial, sans-serif;
+}
+
+:root {
+  font-family: system-ui, Arial, sans-serif;
+}
+
+.page {
+  padding: 24px;
+}
