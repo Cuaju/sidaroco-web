@@ -75,7 +75,7 @@ export default {
 <template>
   <div id="background">
     <div id="loginCard">
-    <img id="logoImg" src="../utils/Sidaroco.png" alt="Sidaroco" />
+    <img id="logoImg" src="@/assets/images/Sidaroco.png" alt="Sidaroco" />
 
     <h1>Login</h1>
         <form @submit.prevent="onSubmit">

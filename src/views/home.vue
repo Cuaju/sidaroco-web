@@ -36,7 +36,7 @@
 
       <div class="cards">
         <article class="placeCard">
-          <div class="thumb" />
+          <div class="thumb" :style="{ backgroundImage: `url(${destinationImage})` }"></div>
           <div class="meta">
             <h3>Veracruz</h3>
             <p>Beach + food + vibes</p>
@@ -44,7 +44,7 @@
         </article>
 
         <article class="placeCard">
-          <div class="thumb" />
+          <div class="thumb" :style="{ backgroundImage: `url(${destinationImage})` }"></div>
           <div class="meta">
             <h3>CDMX</h3>
             <p>Museums + city life</p>
@@ -52,7 +52,7 @@
         </article>
 
         <article class="placeCard">
-          <div class="thumb" />
+          <div class="thumb" :style="{ backgroundImage: `url(${destinationImage})` }"></div>
           <div class="meta">
             <h3>Puebla</h3>
             <p>Culture + architecture</p>
@@ -65,7 +65,15 @@
 
 <script>
 import ClientLayout from "../layouts/clientLayout.vue";
-export default { components: { ClientLayout } };
+import destinationImage from "@/assets/images/destinationPlaceholder.jpg";
+export default {
+  components: { ClientLayout },
+  setup() {
+    return {
+      destinationImage: destinationImage,
+    };
+  },
+};
 </script>
 
 <style scoped lang="scss">
@@ -73,12 +81,10 @@ export default { components: { ClientLayout } };
 
 .hero {
   padding: 44px 18px 28px;
-  background: radial-gradient(
-    circle at 30% 20%,
-    $secondaryColor 0%,
-    $primaryColor 55%,
-    #001a18 100%
-  );
+  background: radial-gradient(circle at 30% 20%,
+      $secondaryColor 0%,
+      $primaryColor 55%,
+      #001a18 100%);
 }
 
 .heroInner {
@@ -214,8 +220,11 @@ input:focus {
 }
 
 .thumb {
-  height: 140px;
-  background: linear-gradient(135deg, rgba($secondaryColor, 0.55), rgba($primaryColor, 0.95));
+  width: 100%;
+  height: 180px;
+  background-size: cover;
+  background-position: center;
+  border-radius: 12px;
 }
 
 .meta {

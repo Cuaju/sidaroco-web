@@ -2,12 +2,14 @@
   <div class="appShell">
     <header class="topbar">
       <div class="brand">
-        <img class="logo" src="../utils/Sidaroco.png" alt="Sidaroco" />
+        <RouterLink to="/home" aria-label="Go to home">
+          <img class="logo" src="@/assets/images/Sidaroco.png" alt="Sidaroco" />
+        </RouterLink>
       </div>
 
       <nav class="nav">
-        <RouterLink class="navLink" to="/">Home</RouterLink>
-        <RouterLink class="navLink" to="/trips">My trips</RouterLink>
+        <RouterLink class="navLink" to="/home">Home</RouterLink>
+        <RouterLink class="navLink" to="/myTrips">My trips</RouterLink>
       </nav>
 
       <div class="user">
@@ -48,7 +50,7 @@ export default {};
   gap: 18px;
   padding: 0 22px;
 
-  background: rgba($primaryColor, 0.92);
+  background: rgba($secondaryColor, 0.92);
   backdrop-filter: blur(8px);
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
@@ -57,6 +59,10 @@ export default {};
   height: 32px;
   width: auto;
   display: block;
+}
+
+.brand a {
+  display: inline-block;
 }
 
 .nav {
