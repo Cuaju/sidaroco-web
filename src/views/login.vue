@@ -96,6 +96,13 @@ export default {
         {{ loading ? "Logging in..." : "Login" }}
         </button>
         </form>
+
+        <label >
+          <span>
+            Dont have an account yet? ->
+          </span>
+          <router-link to="/register">Register</router-link>
+        </label>
     </div>
   </div>
 </template>
