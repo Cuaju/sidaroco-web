@@ -51,23 +51,29 @@ export default {
     },
 
     async onSubmit() {
-      this.error = "";
-      this.touchAll();
-      if (!this.isFormValid) return;
+  this.error = "";
+  this.touchAll();
+  if (!this.isFormValid) return;
 
-      this.loading = true;
+  this.loading = true;
 
-      try {
-        const auth = useAuthStore();
-        await auth.login(this.email.trim(), this.password);
+  try {
+    const auth = useAuthStore();
+    await auth.login(this.email.trim(), this.password);
 
-        this.$router.push("/home");
-      } catch (e) {
-        this.error = e?.message || "Login failed";
-      } finally {
-        this.loading = false;
-      }
+    if (auth.account.userType === "RouteManager") {
+      this.$router.push("/routes");
+    } else {
+      this.$router.push("/home");
     }
+
+  } catch (e) {
+    this.error = e?.message || "Login failed";
+  } finally {
+    this.loading = false;
+  }
+}
+
   }
 };
 </script>
