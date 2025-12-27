@@ -2,7 +2,9 @@
     <article class="ticketCard">
         <div class="route">
             <span class="label">Route</span>
-            <span class="value">#{{ ticket.routeId }}</span>
+            <span class="value">
+                {{ ticket.trip ? `Route #${ticket.trip.routeId}` : "—" }}
+            </span>
         </div>
 
         <div class="date">
@@ -13,6 +15,11 @@
         <div class="price">
             <span class="label">Price</span>
             <span class="value">${{ ticket.price.toFixed(2) }}</span>
+        </div>
+
+        <div class="seat">
+            <span class="label">Seat</span>
+            <span class="value">#{{ ticket.seatNumber }}</span>
         </div>
 
         <div class="status" :data-state="tripState">
@@ -73,7 +80,7 @@ export default {
 
 .ticketCard {
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr auto;
+    grid-template-columns: 1fr 1fr 1fr 1fr auto;
     gap: 14px;
     align-items: center;
 
