@@ -57,10 +57,10 @@
 <script setup>
 import { ref, onMounted, computed, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import MapPicker from "@/components/MapPicker.vue";
+import MapPicker from "@/components/mapPicker.vue";
 import { getRouteById, updateRoute } from "@/services/routesApi";
 import { useToast } from "vue-toastification";
-import RouteManagerLayout from "@/layouts/RouteManagerLayout.vue";
+import RouteManagerLayout from "@/layouts/routeManagerLayout.vue";
 
 
 const router = useRouter();

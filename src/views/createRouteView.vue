@@ -35,11 +35,11 @@
 
 import { ref } from "vue";
 import { useRouter } from "vue-router";
-import RouteForm from "@/components/RouteForm.vue";
-import MapPicker from "@/components/MapPicker.vue";
+import RouteForm from "@/components/routeForm.vue";
+import MapPicker from "@/components/mapPicker.vue";
 import { createRoute } from "@/services/routesApi";
 import { useToast } from "vue-toastification";
-import RouteManagerLayout from "@/layouts/RouteManagerLayout.vue";
+import RouteManagerLayout from "@/layouts/routeManagerLayout.vue";
 const toast = useToast();
 
 const router = useRouter();

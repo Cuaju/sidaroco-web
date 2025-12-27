@@ -1,7 +1,7 @@
 import { createRouter, createWebHistory } from "vue-router";
-import ClientLayout from "@/layouts/ClientLayout.vue";
-import RouteManagerLayout from "@/layouts/RouteManagerLayout.vue";
-import FinanceManagerLayout from "@/layouts/FinanceManagerLayout.vue";
+import ClientLayout from "@/layouts/clientLayout.vue";
+import RouteManagerLayout from "@/layouts/routeManagerLayout.vue";
+import FinanceManagerLayout from "@/layouts/financeManagerLayout.vue";
 import { useAuthStore } from "@/stores/authStore";
 
 const routes = [
@@ -27,12 +27,12 @@ const routes = [
       {
         path: "CreateRouteView",
         name: "createRoute",
-        component: () => import("@/views/CreateRouteView.vue"),
+        component: () => import("@/views/createRouteView.vue"),
       },
       {
         path: "routes/:id/edit",
         name: "editRoute",
-        component: () => import("@/views/EditRouteView.vue"),
+        component: () => import("@/views/editRouteView.vue"),
       },
     ],
   },

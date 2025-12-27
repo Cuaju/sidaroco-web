@@ -1,9 +1,10 @@
-console.log("ticketsApi cargado");
-
 const TICKETS_API = import.meta.env.VITE_TICKET_API_URL;
-console.log("TICKETS_API =", TICKETS_API);
 
 export async function getTicketsByUser(userId, token) {
+  if (!Number.isInteger(userId)) {
+    throw new Error("Invalid userId");
+  }
+
   const res = await fetch(`${TICKETS_API}/tickets/user/${userId}`, {
     headers: {
       Authorization: `Bearer ${token}`,
