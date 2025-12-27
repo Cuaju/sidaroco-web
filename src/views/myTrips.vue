@@ -8,8 +8,12 @@
             </div>
 
             <div v-else-if="error" class="state error">
-                {{ error }}
+                <p>{{ error }}</p>
+                <RouterLink to="/home" class="cta">
+                    Volver a Home
+                </RouterLink>
             </div>
+
 
             <div v-else-if="tickets.length === 0" class="state empty">
                 <p>You don’t have any trips yet.</p>
@@ -30,59 +34,45 @@
 import ClientLayout from "../layouts/clientLayout.vue";
 import ticketCard from "../components/ticketCard.vue";
 import { useAuthStore } from "../stores/authStore";
+import { getTicketsByUser } from "@/services/ticketsApi";
 
 export default {
-    components: { ClientLayout, ticketCard },
+  components: { ClientLayout, ticketCard },
 
-    data() {
-        return {
-            tickets: [],
-            loading: false,
-            error: ""
-        };
-    },
+  data() {
+    return {
+      tickets: [],
+      loading: false,
+      error: ""
+    };
+  },
 
-    async mounted() {
-        await this.loadTickets();
-    },
+  async mounted() {
+    await this.loadTickets();
+  },
 
-    methods: {
-        async loadTickets() {
-            this.loading = true;
-            this.error = "";
+  methods: {
+    async loadTickets() {
+      this.loading = true;
+      this.error = "";
 
-            try {
-                const auth = useAuthStore();
-                const token = auth.token;
-                const userId = 1;
-                //const userId = auth.account?.id;
+      try {
+        const auth = useAuthStore();
+        const token = auth.token;
+        const userId = auth.account?.id ?? 1;
 
-                if (!token || !userId) {
-                    throw new Error("Not authenticated");
-                }
-
-                const res = await fetch(
-                    `${import.meta.env.VITE_TICKET_API_URL}/tickets/user/${userId}`,
-                    {
-                        headers: {
-                            Authorization: `Bearer ${token}`,
-                            "Content-Type": "application/json"
-                        }
-                    }
-                );
-
-                if (!res.ok) {
-                    throw new Error(`HTTP ${res.status}`);
-                }
-
-                this.tickets = await res.json();
-            } catch (e) {
-                this.error = e.message || "Failed to load tickets";
-            } finally {
-                this.loading = false;
-            }
+        if (!token || !userId) {
+          throw new Error("Not authenticated");
         }
+
+        this.tickets = await getTicketsByUser(userId, token);
+      } catch (e) {
+        this.error = "No fue posible cargar tus viajes.";
+      } finally {
+        this.loading = false;
+      }
     }
+  }
 };
 </script>
 
@@ -99,28 +89,27 @@ export default {
 }
 
 .state {
-  padding: 32px 0;
-  text-align: center;
-  font-weight: 700;
-  color: #555;
+    padding: 32px 0;
+    text-align: center;
+    font-weight: 700;
+    color: #555;
 }
 
 .state.empty p {
-  margin-bottom: 14px;
+    margin-bottom: 14px;
 }
 
 .state.error {
-  color: #b00020;
+    color: #b00020;
 }
 
 .cta {
-  display: inline-block;
-  padding: 10px 16px;
-  border-radius: 12px;
-  background: #0fb9b1;
-  color: #003c39;
-  font-weight: 900;
-  text-decoration: none;
+    display: inline-block;
+    padding: 10px 16px;
+    border-radius: 12px;
+    background: #0fb9b1;
+    color: #003c39;
+    font-weight: 900;
+    text-decoration: none;
 }
-
 </style>

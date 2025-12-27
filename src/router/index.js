@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from "vue-router";
 import ClientLayout from "@/layouts/ClientLayout.vue";
 import RouteManagerLayout from "@/layouts/RouteManagerLayout.vue";
+import FinanceManagerLayout from "@/layouts/FinanceManagerLayout.vue";
 import { useAuthStore } from "@/stores/authStore";
 
 const routes = [
@@ -35,6 +36,32 @@ const routes = [
       },
     ],
   },
+  {
+    path: "/finance",
+    component: FinanceManagerLayout,
+    meta: {
+      requiresAuth: true,
+      role: "FinanceManager",
+    },
+    children: [
+      {
+        path: "route",
+        name: "financeRouteMonthly",
+        component: () => import("@/views/routeMonthlySummaryView.vue")
+      },
+      {
+        path: "daily",
+        name: "dailySummary",
+        component: () => import("@/views/dailySummaryView.vue"),
+      },
+      {
+        path: "monthly",
+        name: "monthlySummary",
+        component: () => import("@/views/monthlySummaryView.vue"),
+      },
+    ],
+  },
+
 ];
 
 
@@ -51,6 +78,14 @@ router.beforeEach((to, from, next) => {
   }
 
   if (to.meta.role && auth.account?.userType !== to.meta.role) {
+    if (auth.account?.userType === "FinanceManager") {
+      return next("/finance/daily");
+    }
+
+    if (auth.account?.userType === "RouteManager") {
+      return next("/routes");
+    }
+
     return next("/home");
   }
 

@@ -51,28 +51,31 @@ export default {
     },
 
     async onSubmit() {
-  this.error = "";
-  this.touchAll();
-  if (!this.isFormValid) return;
+      this.error = "";
+      this.touchAll();
+      if (!this.isFormValid) return;
 
-  this.loading = true;
+      this.loading = true;
 
-  try {
-    const auth = useAuthStore();
-    await auth.login(this.email.trim(), this.password);
+      try {
+        const auth = useAuthStore();
+        await auth.login(this.email.trim(), this.password);
 
-    if (auth.account.userType === "RouteManager") {
-      this.$router.push("/routes");
-    } else {
-      this.$router.push("/home");
+        if (auth.account.userType === "RouteManager") {
+          this.$router.push("/routes");
+        }
+        else if (auth.account.userType === "FinanceManager") {
+          this.$router.push("/finance/daily");
+        } else {
+          this.$router.push("/home");
+        }
+
+      } catch (e) {
+        this.error = e?.message || "Login failed";
+      } finally {
+        this.loading = false;
+      }
     }
-
-  } catch (e) {
-    this.error = e?.message || "Login failed";
-  } finally {
-    this.loading = false;
-  }
-}
 
   }
 };
@@ -81,34 +84,36 @@ export default {
 <template>
   <div id="background">
     <div id="loginCard">
-    <img id="logoImg" src="@/assets/images/Sidaroco.png" alt="Sidaroco" />
+      <img id="logoImg" src="@/assets/images/Sidaroco.png" alt="Sidaroco" />
 
-    <h1>Login</h1>
-        <form @submit.prevent="onSubmit">
+      <h1>Login</h1>
+      <form @submit.prevent="onSubmit">
         <label class="field">
-        <span>Email</span>
-        <input v-model.trim="email" type="email" placeholder="Ej. JuaPerez123@gmail.com" autocomplete="email" @blur="touched.email = true"/>
-        <p v-if="emailError" class="fieldError">{{ emailError }}</p>
+          <span>Email</span>
+          <input v-model.trim="email" type="email" placeholder="Ej. JuaPerez123@gmail.com" autocomplete="email"
+            @blur="touched.email = true" />
+          <p v-if="emailError" class="fieldError">{{ emailError }}</p>
         </label>
 
         <label class="field">
           <span>Password</span>
-          <input v-model="password" type="password" placeholder="********" autocomplete="current-password" @blur="touched.password = true"/>
-        <p v-if="passwordError" class="fieldError">{{ passwordError }}</p>
+          <input v-model="password" type="password" placeholder="********" autocomplete="current-password"
+            @blur="touched.password = true" />
+          <p v-if="passwordError" class="fieldError">{{ passwordError }}</p>
         </label>
         <p v-if="error" class="error">{{ error }}</p>
 
         <button id="loginBtn" type="submit" :disabled="loading">
-        {{ loading ? "Logging in..." : "Login" }}
+          {{ loading ? "Logging in..." : "Login" }}
         </button>
-        </form>
+      </form>
 
-        <label >
-          <span>
-            Dont have an account yet? ->
-          </span>
-          <router-link to="/register">Register</router-link>
-        </label>
+      <label>
+        <span>
+          Dont have an account yet? ->
+        </span>
+        <router-link to="/register">Register</router-link>
+      </label>
     </div>
   </div>
 </template>
@@ -117,18 +122,16 @@ export default {
 @use "../styles/colors.scss" as *;
 
 #background {
-  min-height: 100vh;          
+  min-height: 100vh;
   width: 100%;
-  display: grid;              
-  place-items: center;        
+  display: grid;
+  place-items: center;
   padding: 24px;
 
-  background: radial-gradient(
-    circle at 30% 20%,
-    $secondaryColor 0%,
-    $primaryColor 55%,
-    #001a18 100%
-  );
+  background: radial-gradient(circle at 30% 20%,
+      $secondaryColor 0%,
+      $primaryColor 55%,
+      #001a18 100%);
 }
 
 #loginCard {
@@ -136,7 +139,7 @@ export default {
   padding: 28px;
   border-radius: 18px;
 
-  background: $fourthColor; 
+  background: $fourthColor;
   box-shadow: 0 18px 60px rgba(0, 0, 0, 0.35);
 
   display: flex;
@@ -176,6 +179,7 @@ h1 {
   font-weight: 700;
   opacity: 0.9;
 }
+
 .fieldError {
   font-size: 0.9rem;
   font-weight: 700;
