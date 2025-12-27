@@ -25,7 +25,7 @@
   </article>
 </template>
 <script>
-  import RouteMap from "./RouteMap.vue";
+  import RouteMap from "./routeMap.vue";
   import { useToast } from "vue-toastification";
   import Swal from "sweetalert2";
   export default {
