@@ -30,11 +30,19 @@
                             <th>Income</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        <tr v-for="(data, routeId) in report?.byRoute" :key="routeId">
-                            <td>{{ routeId }}</td>
-                            <td>{{ data.tickets }}</td>
-                            <td>{{ data.income }}</td>
+                    <tbody v-if="report && Object.keys(report.byRoute || {}).length">
+                        <tr v-for="(data, routeId) in report.byRoute" :key="routeId">
+                            <td class="routeCell">{{ routesMap[routeId] ?? `Route ${routeId}` }}</td>
+                            <td class="numberCell">{{ data.tickets }}</td>
+                            <td class="numberCell">{{ data.income }}</td>
+                        </tr>
+                    </tbody>
+
+                    <tbody v-else>
+                        <tr>
+                            <td colspan="3" class="emptyState">
+                                Insufficient data for selected period
+                            </td>
                         </tr>
                     </tbody>
                 </table>
@@ -45,6 +53,7 @@
 
 <script>
 import { getMonthlyReport } from "@/services/ticketsApi";
+import { getRoutes } from "@/services/routesApi";
 
 export default {
     name: "monthlySummaryView",
@@ -52,15 +61,22 @@ export default {
         return {
             selectedMonth: new Date().toISOString().substring(0, 7),
             report: null,
+            routesMap: {},
         };
     },
-    mounted() {
-        this.loadReport();
+
+    async mounted() {
+        const routes = await getRoutes();
+        this.routesMap = Object.fromEntries(
+            routes.map(r => [String(r.id), r.name ?? `Route ${r.id}`])
+        );
+
+        await this.loadReport();
     },
     methods: {
         async loadReport() {
             const [year, month] = this.selectedMonth.split("-");
-            this.report = await getMonthlyReport(year, month);
+            this.report = await getMonthlyReport(year, month, this.token);
         },
         formatMonthYear(year, month) {
             if (!year || !month) return "—";

@@ -12,10 +12,8 @@
         <RouterLink class="navLink" to="/myTrips">My trips</RouterLink>
       </nav>
 
-      <div class="user">
-        <span class="userName">cuahu</span>
-        <div class="avatar" aria-hidden="true">C</div>
-      </div>
+      <UserMenu :userName="user?.name ?? 'User'" :avatar="user?.name?.charAt(0).toUpperCase() ?? 'U'" />
+
     </header>
 
     <main class="content">
@@ -29,7 +27,17 @@
 </template>
 
 <script>
-export default {};
+import UserMenu from "@/components/userMenu.vue";
+
+export default {
+  components: { UserMenu },
+  computed: {
+    user() {
+      const raw = localStorage.getItem("user");
+      return raw ? JSON.parse(raw) : null;
+    },
+  },
+};
 </script>
 
 <style scoped lang="scss">

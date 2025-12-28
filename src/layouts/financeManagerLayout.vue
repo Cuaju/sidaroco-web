@@ -13,10 +13,7 @@
                 <RouterLink class="navLink" to="/finance/route">By route</RouterLink>
             </nav>
 
-            <div class="user">
-                <span class="userName">Finance Manager</span>
-                <div class="avatar">F</div>
-            </div>
+            <UserMenu userName="Finance Manager" avatar="F" />
         </header>
 
         <main class="content">
@@ -26,7 +23,12 @@
 </template>
 
 <script>
-export default {};
+import UserMenu from "@/components/userMenu.vue";
+
+export default {
+  components: { UserMenu },
+};
+
 </script>
 
 <style scoped lang="scss">

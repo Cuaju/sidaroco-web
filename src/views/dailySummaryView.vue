@@ -17,7 +17,7 @@
                 </div>
                 <div class="row">
                     <span>Date</span>
-                    <strong>{{ formatDate(report?.date) }}</strong>
+                    <strong>{{ formatDate(selectedDate) }}</strong>
                 </div>
             </div>
 
@@ -30,13 +30,22 @@
                             <th>Income</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        <tr v-for="(data, routeId) in report?.byRoute" :key="routeId">
-                            <td>{{ routeId }}</td>
-                            <td>{{ data.tickets }}</td>
-                            <td>{{ data.income }}</td>
+                    <tbody v-if="report && Object.keys(report.byRoute || {}).length">
+                        <tr v-for="(data, routeId) in report.byRoute" :key="routeId">
+                            <td class="routeCell">{{ routesMap[routeId] ?? `Route ${routeId}` }}</td>
+                            <td class="numberCell">{{ data.tickets }}</td>
+                            <td class="numberCell">{{ data.income }}</td>
                         </tr>
                     </tbody>
+
+                    <tbody v-else>
+                        <tr>
+                            <td colspan="3" class="emptyState">
+                                Insufficient data for selected period
+                            </td>
+                        </tr>
+                    </tbody>
+
                 </table>
             </div>
         </div>
@@ -45,26 +54,41 @@
 
 <script>
 import { getDailyReport } from "@/services/ticketsApi";
+import { getRoutes } from "@/services/routesApi";
 
 export default {
     name: "dailySummaryView",
     data() {
+        const today = new Date();
+        const yyyy = today.getFullYear();
+        const mm = String(today.getMonth() + 1).padStart(2, "0");
+        const dd = String(today.getDate()).padStart(2, "0");
+
         return {
-            selectedDate: new Date().toISOString().substring(0, 10),
+            selectedDate: `${yyyy}-${mm}-${dd}`,
             report: null,
+            routesMap: {},
         };
     },
-    mounted() {
-        this.loadReport();
+
+    async mounted() {
+        const routes = await getRoutes();
+        this.routesMap = Object.fromEntries(
+            routes.map(r => [String(r.id), r.name ?? `Route ${r.id}`])
+        );
+
+        await this.loadReport();
     },
     methods: {
         async loadReport() {
-            this.report = await getDailyReport(this.selectedDate);
+            this.report = await getDailyReport(this.selectedDate, this.token);
         },
         formatDate(value) {
             if (!value) return "—";
-            const d = new Date(value);
-            return d.toLocaleDateString("es-MX", {
+
+            const [year, month, day] = value.split("T")[0].split("-");
+
+            return new Date(year, month - 1, day).toLocaleDateString("es-MX", {
                 year: "numeric",
                 month: "long",
                 day: "numeric",
