@@ -3,6 +3,12 @@
         <header class="viewHeader">
             <h2>Monthly summary</h2>
             <input type="month" v-model="selectedMonth" @change="loadReport" />
+            <button v-if="hasData" class="pdfBtn" @click="downloadPdf">
+                Download PDF
+            </button>
+
+            <span v-else class="noData">Insufficient data to export</span>
+
         </header>
 
         <div class="grid">
@@ -17,7 +23,7 @@
                 </div>
                 <div class="row">
                     <span>Period</span>
-                    <strong>{{ formatMonthYear(report?.year, report?.month) }}</strong>
+                    <strong>{{ formatMonthEnglish(report?.year, report?.month) }}</strong>
                 </div>
             </div>
 
@@ -54,9 +60,20 @@
 <script>
 import { getMonthlyReport } from "@/services/ticketsApi";
 import { getRoutes } from "@/services/routesApi";
+import { buildFinanceReportPdf } from "@/utils/reportPdfBuilder";
+import logo from "@/assets/images/logoBase64";
 
 export default {
     name: "monthlySummaryView",
+    computed: {
+        hasData() {
+            return (
+                this.report &&
+                Object.keys(this.report.byRoute || {}).length > 0
+            );
+        }
+    },
+
     data() {
         return {
             selectedMonth: new Date().toISOString().substring(0, 7),
@@ -78,13 +95,60 @@ export default {
             const [year, month] = this.selectedMonth.split("-");
             this.report = await getMonthlyReport(year, month, this.token);
         },
-        formatMonthYear(year, month) {
-            if (!year || !month) return "—";
+        formatDateEnglish(value) {
+            if (!value) return "—";
 
-            const d = new Date(year, month - 1, 1);
-            return d.toLocaleDateString("es-MX", {
-                year: "numeric",
+            const d = new Date(value);
+
+            const day = d.getDate();
+            const suffix =
+                day % 10 === 1 && day !== 11 ? "st" :
+                    day % 10 === 2 && day !== 12 ? "nd" :
+                        day % 10 === 3 && day !== 13 ? "rd" : "th";
+
+            return `${d.toLocaleDateString("en-US", {
                 month: "long",
+                year: "numeric"
+            })} ${day}${suffix}, ${d.getFullYear()}`;
+        },
+
+        formatMonthEnglish(year, month) {
+            if (!year || !month) return "—";
+            return new Date(year, month - 1, 1).toLocaleDateString("en-US", {
+                month: "long",
+                year: "numeric"
+            });
+        },
+
+        formatTimestamp() {
+            return new Date().toLocaleString("en-US", {
+                dateStyle: "medium",
+                timeStyle: "short",
+                timeZone: "UTC"
+            }) + " UTC";
+        },
+        downloadPdf() {
+            const [year, month] = this.selectedMonth.split("-");
+
+            buildFinanceReportPdf({
+                title: "Monthly Summary",
+
+                periodLabel: this.formatMonthEnglish(year, month),
+                queriedAt: this.formatTimestamp(),
+
+                summary: [
+                    { label: "Total revenue", value: this.report.totalIncome },
+                    { label: "Tickets sold", value: this.report.totalTickets }
+                ],
+                tableHeaders: ["Route", "Tickets", "Income"],
+                tableRows: Object.entries(this.report.byRoute).map(
+                    ([routeId, data]) => [
+                        this.routesMap[routeId] ?? `Route ${routeId}`,
+                        data.tickets,
+                        data.income
+                    ]
+                ),
+                logoBase64: logo
             });
         }
     },

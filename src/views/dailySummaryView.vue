@@ -3,6 +3,12 @@
         <header class="viewHeader">
             <h2>Daily summary</h2>
             <input type="date" v-model="selectedDate" @change="loadReport" />
+            <button v-if="hasData" class="pdfBtn" @click="downloadPdf">
+                Download PDF
+            </button>
+
+            <span v-else class="noData">Insufficient data to export</span>
+
         </header>
 
         <div class="grid">
@@ -17,7 +23,7 @@
                 </div>
                 <div class="row">
                     <span>Date</span>
-                    <strong>{{ formatDate(selectedDate) }}</strong>
+                    <strong>{{ formatDateEnglish(selectedDate) }}</strong>
                 </div>
             </div>
 
@@ -55,9 +61,20 @@
 <script>
 import { getDailyReport } from "@/services/ticketsApi";
 import { getRoutes } from "@/services/routesApi";
+import { buildFinanceReportPdf } from "@/utils/reportPdfBuilder";
+import logo from "@/assets/images/logoBase64";
 
 export default {
     name: "dailySummaryView",
+    computed: {
+        hasData() {
+            return (
+                this.report &&
+                Object.keys(this.report.byRoute || {}).length > 0
+            );
+        }
+    },
+
     data() {
         const today = new Date();
         const yyyy = today.getFullYear();
@@ -83,15 +100,49 @@ export default {
         async loadReport() {
             this.report = await getDailyReport(this.selectedDate, this.token);
         },
-        formatDate(value) {
+        formatDateEnglish(value) {
             if (!value) return "—";
 
-            const [year, month, day] = value.split("T")[0].split("-");
+            const [year, month, day] = value.split("-").map(Number);
 
-            return new Date(year, month - 1, day).toLocaleDateString("es-MX", {
-                year: "numeric",
-                month: "long",
-                day: "numeric",
+            // Fecha LOCAL, no UTC
+            const d = new Date(year, month - 1, day);
+
+            const suffix =
+                day % 10 === 1 && day !== 11 ? "st" :
+                    day % 10 === 2 && day !== 12 ? "nd" :
+                        day % 10 === 3 && day !== 13 ? "rd" : "th";
+
+            const monthName = d.toLocaleDateString("en-US", { month: "long" });
+
+            return `${monthName} ${day}${suffix}, ${year}`;
+        },
+
+        formatTimestamp() {
+            return new Date().toLocaleString("en-US", {
+                dateStyle: "medium",
+                timeStyle: "short",
+                timeZone: "UTC"
+            }) + " UTC";
+        },
+        downloadPdf() {
+            buildFinanceReportPdf({
+                title: "Daily Summary",
+                periodLabel: this.formatDateEnglish(this.selectedDate),
+                queriedAt: this.formatTimestamp(),
+                summary: [
+                    { label: "Total revenue", value: this.report.totalIncome },
+                    { label: "Tickets sold", value: this.report.totalTickets }
+                ],
+                tableHeaders: ["Route", "Tickets", "Income"],
+                tableRows: Object.entries(this.report.byRoute).map(
+                    ([routeId, data]) => [
+                        this.routesMap[routeId],
+                        data.tickets,
+                        data.income
+                    ]
+                ),
+                logoBase64: logo
             });
         }
     },

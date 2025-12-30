@@ -19,6 +19,7 @@ const routes = [
       role: "RouteManager",
     },
     children: [
+      // Routes (Rutas)
       {
         path: "routes",
         name: "routes",
@@ -33,6 +34,38 @@ const routes = [
         path: "routes/:id/edit",
         name: "editRoute",
         component: () => import("@/views/editRouteView.vue"),
+      },
+      // Buses (Camiones)
+      {
+        path: "buses",
+        name: "buses",
+        component: () => import("@/views/buses.vue"),
+      },
+      {
+        path: "buses/create",
+        name: "createBus",
+        component: () => import("@/views/createBusView.vue"),
+      },
+      {
+        path: "buses/:id/edit",
+        name: "editBus",
+        component: () => import("@/views/editBusView.vue"),
+      },
+      // Drivers (Conductores)
+      {
+        path: "drivers",
+        name: "drivers",
+        component: () => import("@/views/drivers.vue"),
+      },
+      {
+        path: "drivers/create",
+        name: "createDriver",
+        component: () => import("@/views/createDriverView.vue"),
+      },
+      {
+        path: "drivers/:id/edit",
+        name: "editDriver",
+        component: () => import("@/views/editDriverView.vue"),
       },
     ],
   },

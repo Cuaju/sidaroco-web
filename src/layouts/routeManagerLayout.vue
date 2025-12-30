@@ -2,13 +2,15 @@
   <div class="appShell">
     <header class="topbar">
       <div class="brand">
-        <RouterLink to="/home" aria-label="ESTE ES ROUTER">
+        <RouterLink to="/routes" aria-label="ESTE ES ROUTER">
           <img class="logo" src="@/assets/images/Sidaroco.png" alt="Sidaroco" />
         </RouterLink>
       </div>
 
       <nav class="nav">
-        <a class="navLink" @click="$router.push('/routes')">Routes</a>
+        <a class="navLink" @click="$router.push('/routes')">Rutas</a>
+        <a class="navLink" @click="$router.push('/buses')">Camiones</a>
+        <a class="navLink" @click="$router.push('/drivers')">Conductores</a>
       </nav>
       <UserMenu userName="Route Manager" avatar="R" />
     </header>
@@ -18,7 +20,10 @@
     </main>
 
     <footer class="footer">
-      <p>© {{ new Date().getFullYear() }} S.I.D.A.R.DASDA.C.O System. All rights reserved.</p>
+      <p>
+        © {{ new Date().getFullYear() }} S.I.D.A.R.DASDA.C.O System. All rights
+        reserved.
+      </p>
     </footer>
   </div>
 </template>
@@ -29,7 +34,6 @@ import UserMenu from "@/components/userMenu.vue";
 export default {
   components: { UserMenu },
 };
-
 </script>
 
 <style scoped lang="scss">

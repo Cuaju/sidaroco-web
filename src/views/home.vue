@@ -7,23 +7,28 @@
 
         <div class="searchCard">
           <div class="grid">
-            <label class="field">
-              <span>Origin</span>
-              <input type="text" placeholder="From where do you travel?" />
-            </label>
+            <select v-model="selectedOriginId">
+              <option value="" disabled>Select origin</option>
+              <option v-for="o in origins" :key="o.id" :value="o.id">
+                {{ o.name }}
+              </option>
+            </select>
 
-            <label class="field">
-              <span>Destination</span>
-              <input type="text" placeholder="Where are you going?" />
-            </label>
+            <select v-model="selectedDestinationId" :disabled="!selectedOriginId">
+              <option value="" disabled>Select destination</option>
+              <option v-for="d in destinations" :key="d.id" :value="d.id">
+                {{ d.name }}
+              </option>
+            </select>
+
 
             <label class="field">
               <span>Date</span>
-              <input type="date" />
+              <input type="date" v-model="selectedDate" />
             </label>
           </div>
 
-          <button class="cta">Search trip</button>
+          <button class="cta" :disabled="!canSearch">Search trip</button>
         </div>
       </div>
     </section>
@@ -66,18 +71,80 @@
 <script>
 import ClientLayout from "../layouts/clientLayout.vue";
 import destinationImage from "@/assets/images/destinationPlaceholder.jpg";
+import { getRoutes } from "@/services/routesApi";
+
 export default {
   components: { ClientLayout },
-  setup() {
+
+  data() {
     return {
-      destinationImage: destinationImage,
+      routes: [],
+      origins: [],
+      destinations: [],
+      selectedOriginId: "",
+      selectedDestinationId: "",
+      selectedDate: ""
     };
   },
+
+  computed: {
+    canSearch() {
+      return this.selectedOriginId && this.selectedDestinationId && this.selectedDate;
+    }
+  },
+
+  async mounted() {
+    this.routes = await getRoutes({ take: 100 });
+
+    const originMap = new Map();
+    this.routes.forEach(r => {
+      if (r.origin) {
+        originMap.set(r.origin.id, r.origin.name);
+      }
+    });
+
+    this.origins = Array.from(originMap.entries())
+      .map(([id, name]) => ({ id, name }))
+      .sort((a, b) => a.name.localeCompare(b.name, "es", { sensitivity: "base" }));
+
+  },
+
+  watch: {
+    selectedOriginId(originId) {
+      this.selectedDestinationId = "";
+
+      if (!originId) {
+        this.destinations = [];
+        return;
+      }
+
+      const destinationMap = new Map();
+
+      this.routes
+        .filter(r => r.originId === originId)
+        .forEach(r => {
+          if (r.destination) {
+            destinationMap.set(r.destination.id, r.destination.name);
+          }
+        });
+
+      this.destinations = Array.from(destinationMap.entries())
+        .map(([id, name]) => ({ id, name }))
+        .sort((a, b) => a.name.localeCompare(b.name, "es", { sensitivity: "base" }));
+
+    }
+  },
+
+  setup() {
+    return { destinationImage };
+  }
 };
 </script>
 
+
 <style scoped lang="scss">
 @use "../styles/colors.scss" as *;
+@use "sass:color";
 
 .hero {
   padding: 44px 18px 28px;
@@ -106,10 +173,10 @@ p {
 }
 
 .searchCard {
-  background: rgba($fourthColor, 0.92);
+  background: rgba($fourthColor, 0.94);
   border: 1px solid rgba(0, 0, 0, 0.08);
-  border-radius: 18px;
-  padding: 18px;
+  border-radius: 20px;
+  padding: 20px;
   box-shadow: 0 18px 60px rgba(0, 0, 0, 0.35);
 }
 
@@ -138,37 +205,66 @@ p {
   opacity: 0.9;
 }
 
-input {
+input,
+select {
   height: 44px;
   width: 100%;
   box-sizing: border-box;
+  padding: 0 14px;
 
-  padding: 0 12px;
-  border-radius: 12px;
+  border-radius: 14px;
   border: 1px solid rgba($primaryColor, 0.35);
   background: $fourthColor;
+  color: $primaryColor;
+  font-weight: 700;
 
   outline: none;
+  appearance: none;
 }
 
-input:focus {
+select {
+  background-image: linear-gradient(45deg,
+      transparent 50%,
+      $primaryColor 50%),
+    linear-gradient(135deg,
+      $primaryColor 50%,
+      transparent 50%);
+  background-position:
+    calc(100% - 18px) 18px,
+    calc(100% - 12px) 18px;
+  background-size: 6px 6px;
+  background-repeat: no-repeat;
+}
+
+input:focus,
+select:focus {
   border-color: $thirdColor;
   box-shadow: 0 0 0 4px rgba($thirdColor, 0.35);
 }
 
+select:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
 .cta {
   margin-top: 14px;
-  height: 46px;
+  height: 48px;
   width: 100%;
   border: none;
-  border-radius: 14px;
+  border-radius: 16px;
 
-  background: $thirdColor;
+  background: linear-gradient(
+    135deg,
+    $thirdColor,
+    color.adjust($thirdColor, $lightness: 8%)
+  );
   color: $primaryColor;
   font-weight: 1000;
   letter-spacing: 0.4px;
 
   cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
 @media (min-width: 820px) {
@@ -178,8 +274,14 @@ input:focus {
   }
 }
 
-.cta:hover {
-  filter: brightness(0.96);
+.cta:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px rgba($thirdColor, 0.45);
+}
+
+.cta:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .reco {
@@ -213,10 +315,16 @@ input:focus {
 
 .placeCard {
   overflow: hidden;
-  border-radius: 18px;
+  border-radius: 20px;
   background: $fourthColor;
   border: 1px solid rgba($primaryColor, 0.12);
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.placeCard:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.14);
 }
 
 .thumb {
@@ -224,7 +332,6 @@ input:focus {
   height: 180px;
   background-size: cover;
   background-position: center;
-  border-radius: 12px;
 }
 
 .meta {
