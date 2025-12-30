@@ -120,52 +120,99 @@ export default {
 
 <style scoped lang="scss">
 @use "../styles/colors.scss" as *;
+@use "sass:color";
 
 #background {
   min-height: 100vh;
-  width: 100%;
   display: grid;
   place-items: center;
   padding: 24px;
 
-  background: radial-gradient(circle at 30% 20%,
-      $secondaryColor 0%,
-      $primaryColor 55%,
-      #001a18 100%);
+  background: radial-gradient(
+    circle at 30% 20%,
+    $secondaryColor 0%,
+    $primaryColor 55%,
+    #001a18 100%
+  );
 }
 
 #loginCard {
   width: min(420px, 92vw);
-  padding: 28px;
-  border-radius: 18px;
+  padding: 16px;
+  border-radius: 22px;
 
-  background: $fourthColor;
-  box-shadow: 0 18px 60px rgba(0, 0, 0, 0.35);
+  background: linear-gradient(
+    160deg,
+    color.adjust($fourthColor, $lightness: 3%),
+    color.adjust($fourthColor, $lightness: -4%)
+  );
+
+  box-shadow: 0 18px 55px rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(8px);
 
   display: flex;
   flex-direction: column;
   gap: 14px;
+
+  max-height: 70px;
+  overflow: hidden;
+  cursor: pointer;
+
+  transition:
+    max-height 3.9s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 1.5s ease,
+    transform 1.5s ease;
+}
+
+#loginCard:hover,
+#loginCard:focus-within {
+  max-height: 650px;
+  transform: translateY(-6px);
+
+  box-shadow:
+    0 45px 140px rgba(0, 0, 0, 0.55),
+    0 0 0 1px rgba($secondaryColor, 0.3);
+}
+
+#loginCard h1,
+#loginCard form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+#loginCard > label {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.35s ease, transform 0.35s ease;
+}
+
+#loginCard:hover h1,
+#loginCard:hover form,
+#loginCard:hover > label,
+#loginCard:focus-within h1,
+#loginCard:focus-within form,
+#loginCard:focus-within > label {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 #logoImg {
   width: 100%;
-  max-width: 420px;
-  height: auto;
-  margin: 0 auto 6px;
+  max-width: 360px;
+  margin: 0 auto;
   display: block;
+  transition: transform 0.4s ease;
+}
+
+#loginCard:hover #logoImg,
+#loginCard:focus-within #logoImg {
+  transform: scale(1.06);
 }
 
 h1 {
-  margin: 0 0 4px;
   color: $secondaryColor;
   font-weight: 800;
-  letter-spacing: -0.5px;
-}
-
-.error {
-  margin-top: 10px;
-  color: #b00020;
-  font-weight: 700;
 }
 
 .field {
@@ -177,15 +224,17 @@ h1 {
 .field span {
   color: $thirdColor;
   font-weight: 700;
-  opacity: 0.9;
 }
 
 .fieldError {
   font-size: 0.9rem;
   font-weight: 700;
   color: #b00020;
-  margin: -4px 0 0;
-  line-height: 1.1;
+}
+
+.error {
+  color: #b00020;
+  font-weight: 700;
 }
 
 input {
@@ -193,18 +242,16 @@ input {
   padding: 0 12px;
   border-radius: 10px;
   border: 1px solid $primaryColor;
-
-  outline: none;
   background: $fourthColor;
+  outline: none;
 }
 
 input:focus {
   border-color: $thirdColor;
-  box-shadow: 0 0 0 4px $thirdColor;
+  box-shadow: 0 0 0 4px rgba($thirdColor, 0.35);
 }
 
 #loginBtn {
-  margin-top: 10px;
   height: 44px;
   width: 100%;
   border: none;
@@ -213,14 +260,12 @@ input:focus {
   background: $primaryColor;
   color: $fourthColor;
   font-weight: 800;
-  letter-spacing: 0.5px;
 
   cursor: pointer;
-  transition: transform 0.08s ease, opacity 0.2s ease, box-shadow 0.2s ease;
+  transition: transform 0.08s ease, box-shadow 0.2s ease;
 }
 
 #loginBtn:hover {
-  opacity: 0.95;
   box-shadow: 0 14px 30px rgba(0, 0, 0, 0.22);
 }
 
@@ -233,4 +278,5 @@ input:focus {
   cursor: not-allowed;
   box-shadow: none;
 }
+
 </style>

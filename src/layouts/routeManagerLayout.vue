@@ -2,7 +2,7 @@
   <div class="appShell">
     <header class="topbar">
       <div class="brand">
-        <RouterLink to="/home" aria-label="ESTE ES ROUTER">
+        <RouterLink to="/routes" aria-label="ESTE ES ROUTER">
           <img class="logo" src="@/assets/images/Sidaroco.png" alt="Sidaroco" />
         </RouterLink>
       </div>

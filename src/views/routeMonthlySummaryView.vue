@@ -12,6 +12,12 @@
         </select>
 
         <input type="month" v-model="selectedMonth" @change="loadReport" />
+
+        <button v-if="hasData" class="pdfBtn" @click="downloadPdf">
+          Download PDF
+        </button>
+
+        <span v-else class="noData">Insufficient data to export</span>
       </div>
     </header>
 
@@ -39,9 +45,17 @@
 <script>
 import { getMonthlyReportByRoute } from "@/services/ticketsApi";
 import { getRoutes } from "@/services/routesApi";
+import { buildFinanceReportPdf } from "@/utils/reportPdfBuilder";
+import logo from "@/assets/images/logoBase64";
 
 export default {
   name: "routeMonthlySummaryView",
+  computed: {
+    hasData() {
+      return this.report && this.report.totalTickets > 0;
+    }
+  },
+
   data() {
     return {
       selectedMonth: new Date().toISOString().substring(0, 7),
@@ -63,6 +77,62 @@ export default {
         this.selectedRoute
       );
     },
+    formatDateEnglish(value) {
+      if (!value) return "—";
+
+      const d = new Date(value);
+
+      const day = d.getDate();
+      const suffix =
+        day % 10 === 1 && day !== 11 ? "st" :
+          day % 10 === 2 && day !== 12 ? "nd" :
+            day % 10 === 3 && day !== 13 ? "rd" : "th";
+
+      return `${d.toLocaleDateString("en-US", {
+        month: "long",
+        year: "numeric"
+      })} ${day}${suffix}, ${d.getFullYear()}`;
+    },
+
+    formatMonthEnglish(year, month) {
+      if (!year || !month) return "—";
+      return new Date(year, month - 1, 1).toLocaleDateString("en-US", {
+        month: "long",
+        year: "numeric"
+      });
+    },
+
+    formatTimestamp() {
+      return new Date().toLocaleString("en-US", {
+        dateStyle: "medium",
+        timeStyle: "short",
+        timeZone: "UTC"
+      }) + " UTC";
+    },
+    downloadPdf() {
+      const [year, month] = this.selectedMonth.split("-");
+      const routeName =
+        this.routes.find(r => r.id === this.selectedRoute)?.name ??
+        `Route ${this.selectedRoute}`;
+
+      buildFinanceReportPdf({
+        title: "Monthly Route Summary",
+        periodLabel: this.formatMonthEnglish(year, month),
+        queriedAt: this.formatTimestamp(),
+        summary: [
+          { label: "Route", value: routeName },
+          { label: "Tickets sold", value: this.report.totalTickets },
+          { label: "Total income", value: this.report.totalIncome }
+        ],
+        tableHeaders: ["Route", "Tickets", "Income"],
+        tableRows: [[
+          routeName,
+          this.report.totalTickets,
+          this.report.totalIncome
+        ]],
+        logoBase64: logo
+      });
+    }
   },
 };
 </script>

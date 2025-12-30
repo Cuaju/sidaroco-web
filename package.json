@@ -9,6 +9,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "jspdf": "^3.0.4",
+    "jspdf-autotable": "^5.0.2",
     "mapbox-gl": "^3.17.0",
     "pinia": "^3.0.4",
     "sweetalert2": "^11.26.17",
