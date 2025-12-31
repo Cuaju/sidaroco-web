@@ -1,16 +1,16 @@
 <template>
   <div class="busFormCard">
-    <h3>{{ isEditing ? "Editar autobús" : "Registrar autobús" }}</h3>
+    <h3>{{ isEditing ? "Edit bus" : "Register bus" }}</h3>
 
     <div class="formGrid">
       <div class="formFields">
         <label class="field">
-          <span>Nombre</span>
-          <input v-model="form.name" placeholder="Autobús 01" />
+          <span>Name</span>
+          <input v-model="form.name" placeholder="Bus 01" />
         </label>
 
         <label class="field">
-          <span>Modelo</span>
+          <span>Model</span>
           <input v-model="form.model" placeholder="Mercedes-Benz Sprinter" />
         </label>
 
@@ -20,12 +20,12 @@
         </label>
 
         <label class="field">
-          <span>Placa</span>
+          <span>plate</span>
           <input v-model="form.plateNumber" placeholder="ABC-123" />
         </label>
 
         <label class="field">
-          <span>ID Camión</span>
+          <span>Bus ID</span>
           <input
             v-model.number="form.id"
             type="number"
@@ -43,7 +43,7 @@
         </label>
 
         <label class="field">
-          <span>Capacidad</span>
+          <span>Capacity</span>
           <input
             v-model.number="form.capacity"
             type="number"
@@ -54,19 +54,19 @@
         <label class="field">
           <span>Status</span>
           <select v-model="form.status">
-            <option value="">Seleccionar...</option>
-            <option value="Activo">Activo</option>
-            <option value="Inactivo">Inactivo</option>
-            <option value="Mantenimiento">Mantenimiento</option>
+            <option value="">Select...</option>
+            <option value="Activo">Active</option>
+            <option value="Inactivo">Inactive</option>
+            <option value="Mantenimiento">Maintenance</option>
           </select>
         </label>
 
         <label class="field">
-          <span>Ruta (ID)</span>
+          <span>Route (ID)</span>
           <input
             v-model.number="form.routeId"
             type="number"
-            placeholder="ID de ruta (opcional)"
+            placeholder="Route ID (optional)"
           />
         </label>
       </div>
@@ -74,10 +74,10 @@
       <div class="photoSection">
         <div class="photoPreview">
           <img v-if="photoPreview" :src="photoPreview" alt="Preview" />
-          <div v-else class="placeholder">Foto</div>
+          <div v-else class="placeholder">Photo</div>
         </div>
         <label class="photoInput">
-          <span>Seleccionar foto</span>
+          <span>Select photo</span>
           <input type="file" accept="image/*" @change="onPhotoChange" />
         </label>
       </div>
@@ -85,7 +85,7 @@
 
     <div class="actions">
       <button class="saveBtn" :disabled="!isValid" @click="emitSave">
-        {{ isEditing ? "Guardar cambios" : "Guardar" }}
+        {{ isEditing ? "Save changes" : "Save" }}
       </button>
     </div>
   </div>

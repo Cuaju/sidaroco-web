@@ -15,10 +15,10 @@
         <img
           v-if="driver.photoKey"
           :src="driver.photoKey"
-          alt="Foto del conductor"
+          alt="Driver photo"
           class="photo"
         />
-        <div v-else class="noPhoto">Foto</div>
+        <div v-else class="noPhoto">Photo</div>
       </div>
 
       <div class="cardBody">
@@ -38,21 +38,21 @@
         <div class="details">
           <div class="detailItem">
             <div class="detailContent">
-              <span class="label">Licencia</span>
+              <span class="label">License</span>
               <span class="value">{{ driver.licenseNumber }}</span>
             </div>
           </div>
           <div class="detailItem">
             <div class="detailContent">
-              <span class="label">Fecha de nacimiento</span>
+              <span class="label">Birthdate</span>
               <span class="value">{{ formatDate(driver.birthDate) }}</span>
             </div>
           </div>
         </div>
 
         <div class="actions">
-          <button class="editBtn" @click.stop="onEdit">Editar</button>
-          <button class="deleteBtn" @click.stop="onDelete">Eliminar</button>
+          <button class="editBtn" @click.stop="onEdit">Edit</button>
+          <button class="deleteBtn" @click.stop="onDelete">Delete</button>
         </div>
       </div>
     </template>

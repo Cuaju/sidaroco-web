@@ -1,11 +1,11 @@
 <template>
   <div class="tripFormOverlay" @click.self="$emit('close')">
     <div class="tripFormModal">
-      <h3>{{ isEdit ? "Editar Viaje" : "Agregar Viaje" }}</h3>
+      <h3>{{ isEdit ? "Edit trip" : "Add trip" }}</h3>
 
       <form @submit.prevent="handleSubmit">
         <div class="formGroup">
-          <label>Hora de Salida</label>
+          <label>Departure time</label>
           <input
             type="time"
             v-model="form.departureTime"
@@ -14,9 +14,9 @@
         </div>
 
         <div class="formGroup">
-          <label>Ruta</label>
+          <label>Route</label>
           <select v-model="form.routeId" required>
-            <option value="" disabled>Selecciona una ruta</option>
+            <option value="" disabled>Select a route</option>
             <option v-for="route in routes" :key="route.id" :value="route.id">
               {{ route.id }} - {{ route.origin.name }} → {{ route.destination.name }}
             </option>
@@ -24,22 +24,22 @@
         </div>
 
         <div class="formGroup"> 
-          <label>Camión</label>
+          <label>Bus</label>
           <select v-model="form.busId" required>
-            <option value="" disabled>Selecciona un camión</option>
+            <option value="" disabled>Select a bus</option>
             <option v-for="bus in filteredBuses" :key="bus.id" :value="bus.id">
               {{ bus.id }} - {{ bus.name }} ({{ bus.plateNumber }})
             </option>
           </select>
           <small v-if="form.routeId && filteredBuses.length === 0" class="hint">
-            No hay camiones asignados a esta ruta
+            There are no buses assigned to this route
           </small>
         </div>
 
         <div class="formGroup">
-          <label>Conductor</label>
+          <label>Driver</label>
           <select v-model="form.driverId" required>
-            <option value="" disabled>Selecciona un conductor</option>
+            <option value="" disabled>Select a driver</option>
             <option v-for="driver in activeDrivers" :key="driver.id" :value="driver.id">
               {{ driver.id }} - {{ driver.name }}
             </option>
@@ -48,10 +48,10 @@
 
         <div class="formActions">
           <button type="button" class="cancelBtn" @click="$emit('close')">
-            Cancelar
+            Cancel
           </button>
           <button type="submit" class="submitBtn" :disabled="submitting">
-            {{ submitting ? "Guardando..." : isEdit ? "Guardar Cambios" : "Agregar Viaje" }}
+            {{ submitting ? "Saving..." : isEdit ? "Save changes" : "Add trip" }}
           </button>
         </div>
       </form>

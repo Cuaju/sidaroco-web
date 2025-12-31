@@ -16,10 +16,10 @@
         <img
           v-if="bus.photoKey"
           :src="bus.photoKey"
-          alt="Foto del autobús"
+          alt="Bus photo"
           class="photo"
         />
-        <div v-else class="noPhoto">Foto</div>
+        <div v-else class="noPhoto">Photo</div>
       </div>
 
       <div class="cardBody">
@@ -39,7 +39,7 @@
         <div class="details">
           <div class="detailItem">
             <div class="detailContent">
-              <span class="label">Modelo</span>
+              <span class="label">Model</span>
               <span class="value">{{ bus.model }}</span>
             </div>
           </div>
@@ -51,27 +51,27 @@
           </div>
           <div class="detailItem">
             <div class="detailContent">
-              <span class="label">Placa</span>
+              <span class="label">Plate</span>
               <span class="value">{{ bus.plateNumber }}</span>
             </div>
           </div>
           <div class="detailItem">
             <div class="detailContent">
-              <span class="label">Capacidad</span>
-              <span class="value">{{ bus.capacity }} pasajeros</span>
+              <span class="label">Capacity</span>
+              <span class="value">{{ bus.capacity }} passengers</span>
             </div>
           </div>
           <div class="detailItem">
             <div class="detailContent">
-              <span class="label">Ruta</span>
-              <span class="value">{{ bus.routeId || "Sin asignar" }}</span>
+              <span class="label">Route</span>
+              <span class="value">{{ bus.routeId || "Unassigned" }}</span>
             </div>
           </div>
         </div>
 
         <div class="actions">
-          <button class="editBtn" @click.stop="onEdit">Editar</button>
-          <button class="deleteBtn" @click.stop="onDelete">Eliminar</button>
+          <button class="editBtn" @click.stop="onEdit">Edit</button>
+          <button class="deleteBtn" @click.stop="onDelete">Delete</button>
         </div>
       </div>
     </template>

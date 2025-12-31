@@ -1,34 +1,34 @@
 <template>
   <div class="driverFormCard">
-    <h3>{{ isEditing ? "Editar conductor" : "Registrar conductor" }}</h3>
+    <h3>{{ isEditing ? "Edit driver" : "Register driver" }}</h3>
 
     <div class="formGrid">
       <div class="formFields">
         <label class="field">
-          <span>Nombre</span>
+          <span>Name</span>
           <input v-model="form.name" placeholder="Juan Pérez" />
         </label>
 
         <label class="field">
-          <span>Número de licencia</span>
+          <span>License number</span>
           <input v-model="form.licenseNumber" placeholder="LIC-123456" />
         </label>
 
         <label class="field">
-          <span>Fecha de nacimiento</span>
+          <span>Birthdate</span>
           <input v-model="form.birdthDate" type="date" />
         </label>
 
         <label class="field">
-          <span>Domicilio</span>
+          <span>Address</span>
           <input
             v-model="form.address"
-            placeholder="Calle 123, Colonia, Ciudad"
+            placeholder="Street 123, Colonia, Ciudad"
           />
         </label>
 
         <label class="field">
-          <span>ID Conductor</span>
+          <span>Driver ID</span>
           <input
             v-model.number="form.id"
             type="number"
@@ -42,10 +42,10 @@
         <label class="field">
           <span>Status</span>
           <select v-model="form.status">
-            <option value="">Seleccionar...</option>
-            <option value="Activo">Activo</option>
-            <option value="Inactivo">Inactivo</option>
-            <option value="Licencia">Licencia</option>
+            <option value="">Select...</option>
+            <option value="Activo">Active</option>
+            <option value="Inactivo">Inactive</option>
+            <option value="Licencia">License</option>
           </select>
         </label>
       </div>
@@ -53,10 +53,10 @@
       <div class="photoSection">
         <div class="photoPreview">
           <img v-if="photoPreview" :src="photoPreview" alt="Preview" />
-          <div v-else class="placeholder">Foto</div>
+          <div v-else class="placeholder">Photo</div>
         </div>
         <label class="photoInput">
-          <span>Seleccionar foto</span>
+          <span>Select photo</span>
           <input type="file" accept="image/*" @change="onPhotoChange" />
         </label>
       </div>
@@ -64,7 +64,7 @@
 
     <div class="actions">
       <button class="saveBtn" :disabled="!isValid" @click="emitSave">
-        {{ isEditing ? "Guardar cambios" : "Guardar" }}
+        {{ isEditing ? "Save changes" : "Save" }}
       </button>
     </div>
   </div>
