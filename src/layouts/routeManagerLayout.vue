@@ -11,6 +11,7 @@
         <a class="navLink" @click="$router.push('/routes')">Rutas</a>
         <a class="navLink" @click="$router.push('/buses')">Camiones</a>
         <a class="navLink" @click="$router.push('/drivers')">Conductores</a>
+        <a class="navLink" @click="$router.push('/schedule')">Programación</a>
       </nav>
       <UserMenu userName="Route Manager" avatar="R" />
     </header>
