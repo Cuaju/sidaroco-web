@@ -1,28 +1,28 @@
 <template>
     <section class="editRoutePage">
       <div class="pageHeader">
-        <h2>Editar ruta</h2>
+        <h2>Edit route</h2>
         <button class="backBtn" @click="goBack">
-          ← Regresar
+          ← Back
         </button>
       </div>
       <p class="subtitle">
-        Modifica el nombre, origen y destino de la ruta
+        Edit the route name, origin, and destination
       </p>
       <div class="content">
         <form @submit.prevent="save" class="routeFormCard">
-          <h3>Datos de la ruta</h3>
+          <h3>Route details</h3>
           <div class="inputs">
             <label class="field">
-              <span>Nombre de la ruta</span>
+              <span>Route name</span>
               <input v-model="form.name" placeholder="Ruta" required />
             </label>
             <label class="field">
-              <span>Origen</span>
+              <span>Origin</span>
               <input v-model="form.originText" placeholder="CDMX" />
             </label>
             <label class="field">
-              <span>Destino</span>
+              <span>Destination</span>
               <input v-model="form.destinationText" placeholder="Toluca" />
             </label>
           </div>
@@ -33,14 +33,14 @@
             @click="traceNewRoute"
             :disabled="!canTrace"
           >
-             Trazar ruta nueva
+          Draw new route
           </button>
           <button
             type="submit"
             class="saveBtn"
             :disabled="!canSave"
           >
-             Guardar cambios
+             Save changes
           </button>
         </form>
         <div class="map-card">
@@ -129,7 +129,7 @@ const traceNewRoute = async () => {
   const d = await geocode(form.value.destinationText);
 
   if (!o || !d) {
-    toast.error("No se pudo trazar la ruta");
+    toast.error("Error drawing route");
     return;
   }
 
@@ -145,7 +145,7 @@ const save = async () => {
     destination: destination.value,
   });
 
-  toast.success("ruta actualizada");
+  toast.success("Route updated");
   router.push("/routes");
 };
 </script>

@@ -1,9 +1,9 @@
 <template>
   <section class="busesPage">
-    <h2>Camiones</h2>
+    <h2>Buses</h2>
 
     <div class="toolbar">
-      <button class="addBtn" @click="goToCreateBus">Registrar Camión</button>
+      <button class="addBtn" @click="goToCreateBus">Register bus</button>
 
       <div class="filters">
         <input
@@ -16,23 +16,23 @@
           v-model="searchQuery"
           type="text"
           class="searchInput"
-          placeholder="Buscar por nombre, placa, VIN..."
+          placeholder="Search by name, license plate, VIN..."
         />
         <select v-model="statusFilter" class="filterSelect">
-          <option value="">Todos los status</option>
-          <option value="Activo">Activo</option>
-          <option value="Inactivo">Inactivo</option>
-          <option value="Mantenimiento">Mantenimiento</option>
+          <option value="">All statuses</option>
+          <option value="Activo">Active</option>
+          <option value="Inactivo">Inactive</option>
+          <option value="Mantenimiento">Maintenance</option>
         </select>
       </div>
     </div>
 
-    <div v-if="loading">Cargando camiones...</div>
+    <div v-if="loading">Loading buses...</div>
     <div v-else-if="filteredBuses.length === 0" class="empty">
       {{
         buses.length === 0
-          ? "No hay camiones registrados"
-          : "No se encontraron resultados"
+          ? "No buses registered"
+          : "No results found"
       }}
     </div>
     <div v-else class="busesList">

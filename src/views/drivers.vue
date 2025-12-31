@@ -1,10 +1,10 @@
 <template>
   <section class="driversPage">
-    <h2>Conductores</h2>
+    <h2>Drivers</h2>
 
     <div class="toolbar">
       <button class="addBtn" @click="goToCreateDriver">
-        Registrar Conductor
+        Register driver
       </button>
 
       <div class="filters">
@@ -18,23 +18,23 @@
           v-model="searchQuery"
           type="text"
           class="searchInput"
-          placeholder="Buscar por nombre o licencia..."
+          placeholder="Search by name or license..."
         />
         <select v-model="statusFilter" class="filterSelect">
-          <option value="">Todos los status</option>
-          <option value="Activo">Activo</option>
-          <option value="Inactivo">Inactivo</option>
-          <option value="Licencia">Licencia</option>
+          <option value="">All statuses</option>
+          <option value="Activo">Active</option>
+          <option value="Inactivo">Inactive</option>
+          <option value="Licencia">License</option>
         </select>
       </div>
     </div>
 
-    <div v-if="loading">Cargando conductores...</div>
+    <div v-if="loading">Loading drivers...</div>
     <div v-else-if="filteredDrivers.length === 0" class="empty">
       {{
         drivers.length === 0
-          ? "No hay conductores registrados"
-          : "No se encontraron resultados"
+          ? "No drivers registered"
+          : "No results found"
       }}
     </div>
     <div v-else class="driversList">

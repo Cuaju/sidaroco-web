@@ -101,17 +101,17 @@ export default {
     },
     onDelete() {
       Swal.fire({
-        title: "¿Eliminar conductor?",
-        text: "Esta acción no se puede deshacer",
+        title: "Delete driver?",
+        text: "This action cannot be undone",
         icon: "warning",
         showCancelButton: true,
         confirmButtonColor: "#e53935",
-        cancelButtonText: "Cancelar",
-        confirmButtonText: "Sí, eliminar",
+        cancelButtonText: "Cancel",
+        confirmButtonText: "Yes, delete",
       }).then((result) => {
         if (result.isConfirmed) {
           this.$emit("delete", this.driver.id);
-          this.toast.success("Conductor eliminado");
+          this.toast.success("Driver deleted");
         }
       });
     },

@@ -1,12 +1,12 @@
 <template>
   <section class="createBusPage">
     <div class="pageHeader">
-      <h2>Registrar nuevo camión</h2>
-      <button class="backBtn" @click="goBack">← Regresar</button>
+      <h2>Register new bus</h2>
+      <button class="backBtn" @click="goBack">← Back</button>
     </div>
 
     <p class="subtitle">
-      Ingresa los datos del camión para registrarlo en el sistema
+      Enter bus details to register it in the system
     </p>
 
     <div class="content">
@@ -31,11 +31,11 @@ const goBack = () => {
 const saveBus = async (formData) => {
   try {
     await createBus(formData);
-    toast.success("Camión registrado correctamente");
+    toast.success("Bus registered successfully");
     router.push("/buses");
   } catch (err) {
     console.error("Error al guardar camión:", err);
-    toast.error(err.message || "Error al guardar el camión");
+    toast.error(err.message || "Error saving bus");
   }
 };
 </script>

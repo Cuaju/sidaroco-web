@@ -1,13 +1,13 @@
 <template>
   <section class="editDriverPage">
     <div class="pageHeader">
-      <h2>Editar conductor</h2>
-      <button class="backBtn" @click="goBack">← Regresar</button>
+      <h2>Edit driver</h2>
+      <button class="backBtn" @click="goBack">← Back</button>
     </div>
 
-    <p class="subtitle">Modifica los datos del conductor</p>
+    <p class="subtitle">Update driver details</p>
 
-    <div v-if="loading" class="loading">Cargando datos...</div>
+    <div v-if="loading" class="loading">Loading data...</div>
     <div v-else class="content">
       <DriverForm :initialData="driver" :isEditing="true" @save="saveDriver" />
     </div>
@@ -38,7 +38,7 @@ onMounted(async () => {
     driver.value = await getDriverById(id);
   } catch (err) {
     console.error("Error al cargar conductor:", err);
-    toast.error("Error al cargar los datos del conductor");
+    toast.error("Error loading driver data");
     router.push("/drivers");
   } finally {
     loading.value = false;
@@ -49,11 +49,11 @@ const saveDriver = async (formData) => {
   try {
     const id = parseInt(route.params.id);
     await updateDriver(id, formData);
-    toast.success("Conductor actualizado correctamente");
+    toast.success("Driver updated successfully");
     router.push("/drivers");
   } catch (err) {
     console.error("Error al actualizar conductor:", err);
-    toast.error(err.message || "Error al actualizar el conductor");
+    toast.error(err.message || "Error updating the driver");
   }
 };
 </script>

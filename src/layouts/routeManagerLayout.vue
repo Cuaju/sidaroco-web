@@ -8,10 +8,10 @@
       </div>
 
       <nav class="nav">
-        <a class="navLink" @click="$router.push('/routes')">Rutas</a>
-        <a class="navLink" @click="$router.push('/buses')">Camiones</a>
-        <a class="navLink" @click="$router.push('/drivers')">Conductores</a>
-        <a class="navLink" @click="$router.push('/schedule')">Programación</a>
+        <a class="navLink" @click="$router.push('/routes')">Routes</a>
+        <a class="navLink" @click="$router.push('/buses')">Buses</a>
+        <a class="navLink" @click="$router.push('/drivers')">Drivers</a>
+        <a class="navLink" @click="$router.push('/schedule')">Schedule</a>
       </nav>
       <UserMenu userName="Route Manager" avatar="R" />
     </header>
@@ -22,7 +22,7 @@
 
     <footer class="footer">
       <p>
-        © {{ new Date().getFullYear() }} S.I.D.A.R.DASDA.C.O System. All rights
+        © {{ new Date().getFullYear() }} S.I.D.A.R.O.C.O System. All rights
         reserved.
       </p>
     </footer>

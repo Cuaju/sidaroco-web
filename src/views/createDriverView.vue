@@ -1,12 +1,12 @@
 <template>
   <section class="createDriverPage">
     <div class="pageHeader">
-      <h2>Registrar nuevo conductor</h2>
-      <button class="backBtn" @click="goBack">← Regresar</button>
+      <h2>Register new driver</h2>
+      <button class="backBtn" @click="goBack">← Back</button>
     </div>
 
     <p class="subtitle">
-      Ingresa los datos del conductor para registrarlo en el sistema
+      Enter driver details to register it in the system
     </p>
 
     <div class="content">
@@ -31,11 +31,11 @@ const goBack = () => {
 const saveDriver = async (formData) => {
   try {
     await createDriver(formData);
-    toast.success("Conductor registrado correctamente");
+    toast.success("Driver registered successfully");
     router.push("/drivers");
   } catch (err) {
     console.error("Error al guardar conductor:", err);
-    toast.error(err.message || "Error al guardar el conductor");
+    toast.error(err.message || "Error saving the driver");
   }
 };
 </script>

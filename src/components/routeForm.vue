@@ -1,20 +1,20 @@
 <template>
   <div class="routeFormCard">
-    <h3>Ingresa los datos</h3>
+    <h3>Please enter the details</h3>
 
     <div class="inputs">
       <label class="field">
-        <span>Nombre de la ruta</span>
-        <input v-model="routeName" placeholder="Ruta 1" />
+        <span>Route name</span>
+        <input v-model="routeName" placeholder="Route" />
       </label>
 
       <label class="field">
-        <span>Origen</span>
+        <span>Origin</span>
         <input v-model="originText" placeholder="CDMX" />
       </label>
 
       <label class="field">
-        <span>Destino</span>
+        <span>Destination</span>
         <input v-model="destinationText" placeholder="Toluca" />
       </label>
     </div>
@@ -24,7 +24,7 @@
         :disabled="!originText || !destinationText"
         @click="emitTrace"
       >
-        Trazar ruta
+      Draw route
       </button>
 
       <button
@@ -32,7 +32,7 @@
         :disabled="!isTraced || !routeName"
         @click="emitSave"
       >
-        Guardar ruta
+        Save route
       </button>
     </div>
   </div>
