@@ -12,6 +12,16 @@ const routes = [
   { path: "/verify-email", name: "verifyEmail", component: () => import("../views/verifyEmail.vue") },
   { path: "/register-profile", name: "registerProfile", component: () => import("../views/registerProfile.vue") },
   {
+    path: "/trips",
+    name: "tripsList",
+    component: () => import("@/views/tripsList.vue")
+  },
+  {
+    path: "/trips/:tripId/seats",
+    name: "seatSelection",
+    component: () => import("@/views/seatSelection.vue")
+  },
+  {
     path: "/",
     component: RouteManagerLayout,
     meta: {
