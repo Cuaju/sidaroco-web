@@ -11,6 +11,7 @@
                 <RouterLink class="navLink" to="/finance/daily">Daily</RouterLink>
                 <RouterLink class="navLink" to="/finance/monthly">Monthly</RouterLink>
                 <RouterLink class="navLink" to="/finance/route">By route</RouterLink>
+                <RouterLink class="navLink" to="/finance/adminAccounts">Admin Accouts</RouterLink>
             </nav>
 
             <UserMenu userName="Finance Manager" avatar="F" />

@@ -22,3 +22,43 @@ export function verifyRegisterCode(payload) {
 export function createProfile(payload) {
   return post("/api/users/profile", payload);
 }
+
+export function getAdminAccounts() {
+  return fetch(`${USERS_API}/api/users/admin/accounts`, {
+    headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
+  }).then(async (r) => {
+    const data = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(data.message || "request failed");
+    return data;
+  });
+}
+
+export function createAdminAccount(payload) {
+  return fetch(`${USERS_API}/api/users/admin/accounts`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${localStorage.getItem("token")}`
+    },
+    body: JSON.stringify(payload)
+  }).then(async (r) => {
+    const data = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(data.message || "request failed");
+    return data;
+  });
+}
+
+export function setAdminActive(accountId, isActive) {
+  return fetch(`${USERS_API}/api/users/admin/accounts/${accountId}/active`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${localStorage.getItem("token")}`
+    },
+    body: JSON.stringify({ isActive })
+  }).then(async (r) => {
+    const data = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(data.message || "request failed");
+    return data;
+  });
+}
