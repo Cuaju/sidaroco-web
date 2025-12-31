@@ -144,7 +144,7 @@
             <input
               v-model.trim="email"
               type="email"
-              placeholder="Ej. JuaPerez123@gmail.com"
+              placeholder="Ex. JuaPerez123@gmail.com"
               autocomplete="email"
               @blur="touched.email = true"
             />

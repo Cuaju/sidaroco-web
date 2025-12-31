@@ -1,6 +1,6 @@
 <template>
   <section class="schedulePage">
-    <h2>Programación de Viajes</h2>
+    <h2>Trip Scheduling</h2>
 
     <div class="scheduleLayout">
       <!-- Calendar sidebar -->
@@ -18,7 +18,7 @@
             @click="createScheduleForDay"
             :disabled="loadingSchedule"
           >
-            Crear Programación
+          Create Schedule
           </button>
 
           <template v-else>
@@ -27,14 +27,14 @@
               v-if="!schedule.isLocked"
               @click="toggleLock"
             >
-              Bloquear Día
+            Block Day
             </button>
             <button class="actionBtn unlock" v-else @click="toggleLock">
-              Desbloquear Día
+              Unblock Day
             </button>
 
             <button class="actionBtn duplicate" @click="showDuplicateModal = true">
-              Duplicar a otro día
+              Duplicate to Another Day
             </button>
 
             <button
@@ -42,7 +42,7 @@
               v-if="!schedule.isLocked"
               @click="confirmDeleteSchedule"
             >
-              Eliminar Programación
+            Delete Schedule
             </button>
           </template>
         </div>
@@ -51,35 +51,35 @@
       <!-- Day detail -->
       <div class="daySide">
         <div v-if="!selectedDate" class="placeholder">
-          <p>Selecciona una fecha en el calendario</p>
+          <p>Select a date on the calendar</p>
         </div>
 
         <div v-else-if="loadingSchedule" class="placeholder">
-          <p>Cargando...</p>
+          <p>Loading...</p>
         </div>
 
         <div v-else-if="!schedule" class="placeholder">
-          <p>No hay programación para {{ formattedDate }}</p>
-          <p class="hint">Crea una programación para comenzar a agregar viajes</p>
+          <p>No schedule for {{ formattedDate }}</p>
+          <p class="hint">Create a schedule to start adding trips</p>
         </div>
 
         <div v-else class="dayDetail">
           <div class="dayHeader">
             <div class="dayTitle">
               <h3>{{ formattedDate }}</h3>
-              <span class="lockBadge" v-if="schedule.isLocked">Bloqueado</span>
+              <span class="lockBadge" v-if="schedule.isLocked">Blocked</span>
             </div>
             <button
               class="addTripBtn"
               v-if="!schedule.isLocked"
               @click="openTripForm(null)"
             >
-              + Agregar Viaje
+              + Add trip
             </button>
           </div>
 
           <div v-if="schedule.trips?.length === 0" class="emptyTrips">
-            No hay viajes programados para este día
+            No trips scheduled for this day
           </div>
 
           <div v-else class="tripsList">
@@ -109,13 +109,13 @@
     <!-- Duplicate Modal -->
     <div class="modalOverlay" v-if="showDuplicateModal" @click.self="showDuplicateModal = false">
       <div class="duplicateModal">
-        <h3>Duplicar Programación</h3>
-        <p>Copiar viajes de <strong>{{ formattedDate }}</strong> a:</p>
+        <h3>Duplicate Schedule</h3>
+        <p>Copy trips from<strong>{{ formattedDate }}</strong> a:</p>
         <input type="date" v-model="duplicateTargetDate" />
         <div class="modalActions">
-          <button class="cancelBtn" @click="showDuplicateModal = false">Cancelar</button>
+          <button class="cancelBtn" @click="showDuplicateModal = false">Cancel</button>
           <button class="submitBtn" @click="handleDuplicate" :disabled="!duplicateTargetDate">
-            Duplicar
+            Duplicate
           </button>
         </div>
       </div>
@@ -204,21 +204,21 @@ async function createScheduleForDay() {
     await createEmptySchedule(selectedDate.value);
     schedule.value = await getScheduleForDay(selectedDate.value);
     calendarRef.value?.refresh();
-    toast.success("Programación creada");
+    toast.success("Schedule created");
   } catch (err) {
-    toast.error(err.message || "Error al crear programación");
+    toast.error(err.message || "Error creating schedule");
   }
 }
 
 async function confirmDeleteSchedule() {
   const result = await Swal.fire({
-    title: "¿Eliminar programación?",
-    text: "Se eliminarán todos los viajes de este día",
+    title: "Delete schedule?",
+    text: "All trips for this day will be deleted",
     icon: "warning",
     showCancelButton: true,
     confirmButtonColor: "#d33",
     cancelButtonColor: "#3085d6",
-    confirmButtonText: "Sí, eliminar",
+    confirmButtonText: "Yes, delete",
     cancelButtonText: "Cancelar",
   });
 
@@ -227,9 +227,9 @@ async function confirmDeleteSchedule() {
       await deleteSchedule(selectedDate.value);
       schedule.value = null;
       calendarRef.value?.refresh();
-      toast.success("Programación eliminada");
+      toast.success("Schedule deleted");
     } catch (err) {
-      toast.error(err.message || "Error al eliminar");
+      toast.error(err.message || "Error deleting");
     }
   }
 }
@@ -238,27 +238,27 @@ async function toggleLock() {
   try {
     if (schedule.value.isLocked) {
       await unlockSchedule(selectedDate.value);
-      toast.success("Programación desbloqueada");
+      toast.success("Schedule unlocked");
     } else {
       await lockSchedule(selectedDate.value);
-      toast.success("Programación bloqueada");
+      toast.success("Schedule locked");
     }
     schedule.value = await getScheduleForDay(selectedDate.value);
     calendarRef.value?.refresh();
   } catch (err) {
-    toast.error(err.message || "Error al cambiar bloqueo");
+    toast.error(err.message || "Error changing lock status");
   }
 }
 
 async function handleDuplicate() {
   try {
     await duplicateSchedule(selectedDate.value, duplicateTargetDate.value);
-    toast.success("Programación duplicada");
+    toast.success("Schedule duplicated");
     showDuplicateModal.value = false;
     duplicateTargetDate.value = "";
     calendarRef.value?.refresh();
   } catch (err) {
-    toast.error(err.message || "Error al duplicar");
+    toast.error(err.message || "Error duplicating");
   }
 }
 
@@ -277,17 +277,17 @@ async function handleTripSubmit(tripData) {
   try {
     if (editingTrip.value) {
       await updateTrip(selectedDate.value, editingTrip.value.id, tripData);
-      toast.success("Viaje actualizado");
+      toast.success("Trip updated");
     } else {
       await addTrip(selectedDate.value, tripData);
-      toast.success("Viaje agregado");
+      toast.success("Trip added");
     }
 
     schedule.value = await getScheduleForDay(selectedDate.value);
     calendarRef.value?.refresh();
     closeTripForm();
   } catch (err) {
-    toast.error(err.message || "Error al guardar viaje");
+    toast.error(err.message || "Error saving trip");
   }
 }
 
@@ -296,9 +296,9 @@ async function handleDeleteTrip(tripId) {
     await deleteTrip(selectedDate.value, tripId);
     schedule.value = await getScheduleForDay(selectedDate.value);
     calendarRef.value?.refresh();
-    toast.success("Viaje eliminado");
+    toast.success("Trip deleted");
   } catch (err) {
-    toast.error(err.message || "Error al eliminar viaje");
+    toast.error(err.message || "Error deleting trip");
   }
 }
 
@@ -306,9 +306,9 @@ async function handleCancelTrip(tripId) {
   try {
     await cancelTrip(selectedDate.value, tripId);
     schedule.value = await getScheduleForDay(selectedDate.value);
-    toast.success("Viaje cancelado");
+    toast.success("Trip canceled");
   } catch (err) {
-    toast.error(err.message || "Error al cancelar viaje");
+    toast.error(err.message || "Error canceling trip");
   }
 }
 
@@ -316,9 +316,9 @@ async function handleCompleteTrip(tripId) {
   try {
     await completeTrip(selectedDate.value, tripId);
     schedule.value = await getScheduleForDay(selectedDate.value);
-    toast.success("Viaje completado");
+    toast.success("Trip completed");
   } catch (err) {
-    toast.error(err.message || "Error al completar viaje");
+    toast.error(err.message || "Error completing trip");
   }
 }
 </script>

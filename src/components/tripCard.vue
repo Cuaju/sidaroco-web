@@ -80,14 +80,14 @@ function formatTime(dateStr) {
 
 async function confirmDelete() {
   const result = await Swal.fire({
-    title: "¿Eliminar viaje?",
-    text: "Esta acción no se puede deshacer",
+    title: "Delete trip?",
+    text: "This action cannot be undone",
     icon: "warning",
     showCancelButton: true,
     confirmButtonColor: "#d33",
     cancelButtonColor: "#3085d6",
-    confirmButtonText: "Sí, eliminar",
-    cancelButtonText: "Cancelar",
+    confirmButtonText: "Yes, delete",
+    cancelButtonText: "Cancel",
   });
 
   if (result.isConfirmed) {

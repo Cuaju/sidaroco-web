@@ -1,15 +1,15 @@
 <template>
     <section class="createRoutePage">
       <div class="pageHeader">
-        <h2>Crear nueva ruta</h2>
+        <h2>Create new route</h2>
 
         <button class="backBtn" @click="goBack">
-          ← Regresar
+          ←Back
         </button>
       </div>
 
       <p class="subtitle">
-        Ingresa el nombre de la ruta, origen y destino para registrarla
+        Please enter the route name, origin, and destination to register the route
       </p>
 
       <div class="content">
@@ -68,7 +68,7 @@ const geocode = async (place) => {
 
 const saveRoute = async ({ name, originText, destinationText }) => {
   if (!isTraced.value) {
-    toast.warning("Primero debes trazar la ruta");
+    toast.warning("You must draw the route first");
     return;
   }
   try {
@@ -76,7 +76,7 @@ const saveRoute = async ({ name, originText, destinationText }) => {
     const destinationCoords = await geocode(destinationText);
 
     if (!originCoords || !destinationCoords) {
-      toast.warning("No se pudo encontrar el origen o destino");
+      toast.warning("Could not find the origin or destination");
       return;
     }
 
@@ -89,11 +89,11 @@ const saveRoute = async ({ name, originText, destinationText }) => {
       destination: destinationCoords,
     });
 
-    toast.success("Ruta guardada correctamente");
+    toast.success("Route saved successfully");
     router.back();
   } catch (err) {
     console.error("Error al guardar ruta:", err);
-    toast.error("Error al guardar la ruta");
+    toast.error("Error saving the route");
   }
 };
 const traceRoute = async ({ originText, destinationText }) => {
@@ -102,7 +102,7 @@ const traceRoute = async ({ originText, destinationText }) => {
     const destinationCoords = await geocode(destinationText);
 
     if (!originCoords || !destinationCoords) {
-      toast.error("No se pudo trazar la ruta");
+      toast.error("Error drawing route");
       return;
     }
 
@@ -110,10 +110,10 @@ const traceRoute = async ({ originText, destinationText }) => {
     destination.value = destinationCoords;
     isTraced.value = true;
 
-    toast.success("Ruta trazada correctamente");
+    toast.success("Route drawn successfully");
   } catch (e) {
     console.error(e);
-    toast.error("Error al trazar la ruta");
+    toast.error("Error drawing route");
   }
 };
 

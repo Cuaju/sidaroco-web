@@ -1,13 +1,13 @@
 <template>
   <section class="editBusPage">
     <div class="pageHeader">
-      <h2>Editar camión</h2>
-      <button class="backBtn" @click="goBack">← Regresar</button>
+      <h2>Edit bus</h2>
+      <button class="backBtn" @click="goBack">← Back</button>
     </div>
 
-    <p class="subtitle">Modifica los datos del camión</p>
+    <p class="subtitle">Update bus details</p>
 
-    <div v-if="loading" class="loading">Cargando datos...</div>
+    <div v-if="loading" class="loading">Loading data...</div>
     <div v-else class="content">
       <BusForm :initialData="bus" :isEditing="true" @save="saveBus" />
     </div>
@@ -37,8 +37,8 @@ onMounted(async () => {
     const id = parseInt(route.params.id);
     bus.value = await getBusById(id);
   } catch (err) {
-    console.error("Error al cargar camión:", err);
-    toast.error("Error al cargar los datos del camión");
+    console.error("Error loading bus data:", err);
+    toast.error("Error loading bus data");
     router.push("/buses");
   } finally {
     loading.value = false;
@@ -49,11 +49,11 @@ const saveBus = async (formData) => {
   try {
     const id = parseInt(route.params.id);
     await updateBus(id, formData);
-    toast.success("Camión actualizado correctamente");
+    toast.success("bus updated successfully");
     router.push("/buses");
   } catch (err) {
     console.error("Error al actualizar camión:", err);
-    toast.error(err.message || "Error al actualizar el camión");
+    toast.error(err.message || "Error updating bus");
   }
 };
 </script>

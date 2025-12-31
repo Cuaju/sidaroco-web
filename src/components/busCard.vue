@@ -111,17 +111,17 @@ export default {
     },
     onDelete() {
       Swal.fire({
-        title: "¿Eliminar autobús?",
-        text: "Esta acción no se puede deshacer",
+        title: "Delete bus?",
+        text: "This action cannot be undone",
         icon: "warning",
         showCancelButton: true,
         confirmButtonColor: "#e53935",
-        cancelButtonText: "Cancelar",
-        confirmButtonText: "Sí, eliminar",
+        cancelButtonText: "Cancel",
+        confirmButtonText: "Yes, delete",
       }).then((result) => {
         if (result.isConfirmed) {
           this.$emit("delete", this.bus.id);
-          this.toast.success("Autobús eliminado");
+          this.toast.success("Bus deleted");
         }
       });
     },

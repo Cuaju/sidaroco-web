@@ -1,10 +1,10 @@
 <template>
   <section class="routesPage">
-    <h2>Rutas guardadas</h2>
+    <h2>Saved Routes</h2>
     <button class="addBtn" @click="goToCreateRoute">
-      Agregar ruta
+      Add route
     </button>
-    <div v-if="loading">Cargando rutas...</div>
+    <div v-if="loading">Loading routes...</div>
     <div v-else class="routesList">
       <RouteCard
         v-for="route in routes"

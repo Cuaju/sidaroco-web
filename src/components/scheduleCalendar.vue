@@ -26,7 +26,7 @@
       >
         <span class="dayNumber" v-if="cell.day">{{ cell.day }}</span>
         <span class="tripCount" v-if="cell.tripCount > 0">
-          {{ cell.tripCount }} viajes
+          {{ cell.tripCount }} trips
         </span>
         <span class="lockIcon" v-if="cell.isLocked">🔒</span>
       </div>
@@ -50,12 +50,14 @@ const month = ref(today.getMonth()); // 0-indexed
 
 const scheduleSummary = ref({}); // { "YYYY-MM-DD": { tripCount, isLocked } }
 
-const weekDays = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
+const weekDays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
 
 const monthNames = [
-  "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
-  "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre",
+  "January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December",
 ];
+
 
 const monthName = computed(() => monthNames[month.value]);
 

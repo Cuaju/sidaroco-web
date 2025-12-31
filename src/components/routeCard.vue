@@ -10,10 +10,10 @@
     </div>
     <div class="actions">
       <button class="editBtn" @click.stop="onEdit">
-        Editar
+        Edit
       </button>
       <button class="deleteBtn" @click.stop="onDelete">
-        Eliminar
+        Delete
       </button>
     </div>
 
@@ -49,17 +49,17 @@
   methods: {
     onDelete() {
   Swal.fire({
-    title: "¿Eliminar ruta?",
-    text: "Esta acción no se puede deshacer",
+    title: "¿Delete route?",
+    text: "This action cannot be undone",
     icon: "warning",
     showCancelButton: true,
     confirmButtonColor: "#e53935",
-    cancelButtonText: "Cancelar",
-    confirmButtonText: "Sí, eliminar"
+    cancelButtonText: "Cancel",
+    confirmButtonText: "Yes, delete"
   }).then((result) => {
     if (result.isConfirmed) {
       this.$emit("delete", this.route.id);
-      this.toast.success("Ruta eliminada");
+      this.toast.success("Route deleted");
     }
   });
 },
