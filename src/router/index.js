@@ -108,6 +108,16 @@ const routes = [
         name: "monthlySummary",
         component: () => import("@/views/monthlySummaryView.vue"),
       },
+      {
+        path: "adminAccounts",
+        name: "viewAdminAccounts",
+        component:() => import("@/views/adminAccounts.vue")
+      },
+      {
+        path: "registerAdmin",
+        name: "registerAdmin",
+        component: ()=> import("@/views/registerAdminAccount.vue"),
+      }
     ],
   },
 

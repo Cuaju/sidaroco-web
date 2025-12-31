@@ -61,7 +61,7 @@
 <script>
 import { getDailyReport } from "@/services/ticketsApi";
 import { getRoutes } from "@/services/routesApi";
-import { buildFinanceReportPdf } from "@/utils/reportPdfBuilder";
+import { buildFinanceReportPdf } from "@/utils/reportPDFBuilder";
 import logo from "@/assets/images/logoBase64";
 
 export default {
