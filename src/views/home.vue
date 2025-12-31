@@ -28,7 +28,10 @@
             </label>
           </div>
 
-          <button class="cta" :disabled="!canSearch">Search trip</button>
+          <button class="cta" :disabled="!canSearch" @click="searchTrip">
+            Search trip
+          </button>
+
         </div>
       </div>
     </section>
@@ -137,7 +140,31 @@ export default {
 
   setup() {
     return { destinationImage };
+  },
+
+  methods: {
+    searchTrip() {
+      const route = this.routes.find(
+        r =>
+          r.originId === this.selectedOriginId &&
+          r.destinationId === this.selectedDestinationId
+      );
+
+      if (!route) {
+        return;
+      }
+
+      this.$router.push({
+        name: "tripsList",
+        query: {
+          routeId: route.id,
+          date: this.selectedDate
+        }
+      });
+    }
+
   }
+
 };
 </script>
 
@@ -254,11 +281,9 @@ select:disabled {
   border: none;
   border-radius: 16px;
 
-  background: linear-gradient(
-    135deg,
-    $thirdColor,
-    color.adjust($thirdColor, $lightness: 8%)
-  );
+  background: linear-gradient(135deg,
+      $thirdColor,
+      color.adjust($thirdColor, $lightness: 8%));
   color: $primaryColor;
   font-weight: 1000;
   letter-spacing: 0.4px;
