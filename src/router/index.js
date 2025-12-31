@@ -77,6 +77,12 @@ const routes = [
         name: "editDriver",
         component: () => import("@/views/editDriverView.vue"),
       },
+      // Schedule (Programación)
+      {
+        path: "schedule",
+        name: "schedule",
+        component: () => import("@/views/scheduleView.vue"),
+      },
     ],
   },
   {
