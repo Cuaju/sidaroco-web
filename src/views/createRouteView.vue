@@ -67,7 +67,7 @@ const geocode = async (place) => {
   return { name: place, lat, lng };
 };
 
-const saveRoute = async ({ name, originText, destinationTex, ticketPrice }) => {
+const saveRoute = async ({ name, originText, destinationText, ticketPrice }) => {
   if (!isTraced.value) {
     toast.warning("You must draw the route first");
     return;
