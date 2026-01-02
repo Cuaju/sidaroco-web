@@ -134,6 +134,7 @@ export default {
 
 <style scoped lang="scss">
 @use "../styles/colors.scss" as *;
+@use "sass:color";
 
 .busCard {
   border-radius: 12px;
@@ -291,7 +292,7 @@ export default {
   &.mantenimiento,
   &.maintenance {
     background: rgba($thirdColor, 0.25);
-    color: darken($thirdColor, 25%);
+    color: color.adjust($thirdColor, $lightness: -25%);
   }
 }
 

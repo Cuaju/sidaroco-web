@@ -225,3 +225,14 @@ export async function completeTrip(date, tripId) {
 
   return data;
 }
+
+export async function getTripById(tripId) {
+  const res = await fetch(`${SCHEDULE_API}/schedule/trip/${tripId}`);
+  const data = await res.json().catch(() => ({}));
+
+  if (!res.ok) {
+    throw new Error(data.message || "Error al obtener trip");
+  }
+
+  return data;
+}

@@ -22,6 +22,11 @@ const routes = [
     component: () => import("@/views/seatSelection.vue")
   },
   {
+    path: '/purchase/:tripId',
+    name: 'purchaseConfirmation',
+    component: () => import('@/views/purchaseTicketSummaryView.vue')
+  },
+  {
     path: "/",
     component: RouteManagerLayout,
     meta: {
@@ -111,12 +116,12 @@ const routes = [
       {
         path: "adminAccounts",
         name: "viewAdminAccounts",
-        component:() => import("@/views/adminAccounts.vue")
+        component: () => import("@/views/adminAccounts.vue")
       },
       {
         path: "registerAdmin",
         name: "registerAdmin",
-        component: ()=> import("@/views/registerAdminAccount.vue"),
+        component: () => import("@/views/registerAdminAccount.vue"),
       }
     ],
   },

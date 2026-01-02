@@ -65,7 +65,7 @@ export default {
     };
   },
   async mounted() {
-    this.routes = await getRoutes();
+    this.routes = await getRoutes({ take: 100 });
   },
   methods: {
     async loadReport() {
