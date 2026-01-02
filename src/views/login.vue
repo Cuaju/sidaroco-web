@@ -1,4 +1,4 @@
- <script>
+<script>
   import mapboxgl from "mapbox-gl";
   import { useAuthStore } from "../stores/authStore";
   
@@ -39,61 +39,65 @@
         return Boolean(emailOk && passOk);
       }
     },
-  mounted() {
-  mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN;
-
-  const map = new mapboxgl.Map({
-    container: "map-bg",
-    style: "mapbox://styles/mapbox/dark-v11",
-    center: [-99.1677, 19.4285], 
-    zoom: 15.6,        
-    pitch: 70,
-    bearing: -20,
-    interactive: false,
-    antialias: true
-  });
-
-  map.on("style.load", () => {
-    const layers = map.getStyle().layers;
-    layers.forEach(layer => {
-      if (layer.type === "symbol") {
-        map.setLayoutProperty(layer.id, "visibility", "none");
-      }
-    });
-
-    map.addLayer({
-      id: "3d-buildings",
-      source: "composite",
-      "source-layer": "building",
-      filter: ["==", "extrude", "true"],
-      type: "fill-extrusion",
-      minzoom: 15, 
-      paint: {
-        "fill-extrusion-color": "#1e2b30",
-        "fill-extrusion-height": ["get", "height"],
-        "fill-extrusion-base": ["get", "min_height"],
-        "fill-extrusion-opacity": 0.95
-      }
-    });
-
-    let zoom = 15.6;
-    let bearing = -20;
-
-    const animate = () => {
-      if (zoom < 16.9) {
-        zoom += 0.0016;
-        map.setZoom(zoom);
-      }
-
-      bearing += 0.008;
-      map.setBearing(bearing);
-
-      requestAnimationFrame(animate);
-    };
-
-    animate();
-  });
-},
+  
+    mounted() {
+      mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN;
+  
+      const map = new mapboxgl.Map({
+        container: "map-bg",
+        style: "mapbox://styles/mapbox/standard",
+        center: [-99.1677, 19.4285], // Willis Tower (Chicago)
+        zoom: 15.6,
+        pitch: 70,
+        bearing: -20,
+        interactive: false,
+        antialias: true,
+        config: {
+          lightPreset: "dawn"
+        }
+      });
+  
+      map.on("load", () => {
+        // 🔕 Ocultar etiquetas
+        map.setConfigProperty("basemap", "showRoadLabels", false);
+        map.setConfigProperty("basemap", "showPlaceLabels", false);
+        map.setConfigProperty("basemap", "showPointOfInterestLabels", false);
+        map.setConfigProperty("basemap", "showTransitLabels", false);
+  
+        // 🏙️ Edificios 3D
+        map.addLayer({
+          id: "3d-buildings",
+          source: "composite",
+          "source-layer": "building",
+          filter: ["==", "extrude", "true"],
+          type: "fill-extrusion",
+          minzoom: 15,
+          paint: {
+            "fill-extrusion-color": "#d8d2c4",
+            "fill-extrusion-height": ["get", "height"],
+            "fill-extrusion-base": ["get", "min_height"],
+            "fill-extrusion-opacity": 0.95
+          }
+        });
+  
+        let zoom = 15.6;
+        let bearing = -20;
+  
+        const animate = () => {
+          if (zoom < 16.9) {
+            zoom += 0.0016;
+            map.setZoom(zoom);
+          }
+  
+          bearing += 0.008;
+          map.setBearing(bearing);
+  
+          requestAnimationFrame(animate);
+        };
+  
+        animate();
+      });
+    },
   
     methods: {
       touchAll() {
@@ -119,7 +123,6 @@
           } else {
             this.$router.push("/home");
           }
-  
         } catch (e) {
           this.error = e?.message || "Login failed";
         } finally {
