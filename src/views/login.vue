@@ -47,7 +47,7 @@
         container: "map-bg",
         style: "mapbox://styles/mapbox/standard",
         center: [-99.1677, 19.4285], // Willis Tower (Chicago)
-        zoom: 15.6,
+        zoom: 16.6,
         pitch: 70,
         bearing: -20,
         interactive: false,
@@ -89,7 +89,7 @@
             map.setZoom(zoom);
           }
   
-          bearing += 0.008;
+          bearing += 0.003;
           map.setBearing(bearing);
   
           requestAnimationFrame(animate);
