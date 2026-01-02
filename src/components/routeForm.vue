@@ -7,6 +7,17 @@
         <span>Route name</span>
         <input v-model="routeName" placeholder="Route" />
       </label>
+      <label class="field">
+       <span>Ticket price</span>
+        <input
+          type="number"
+          min="0"
+          step="0.01"
+          v-model.number="ticketPrice"
+          placeholder="250.00"
+          />
+      </label>
+
 
       <label class="field">
         <span>Origin</span>
@@ -51,6 +62,8 @@ defineProps({
 const routeName = ref("");
 const originText = ref("");
 const destinationText = ref("");
+const ticketPrice = ref(0);
+
 
 const emit = defineEmits(["save", "trace"]);
 
@@ -59,8 +72,10 @@ const emitSave = () => {
     name: routeName.value,
     originText: originText.value,
     destinationText: destinationText.value,
+    ticketPrice: ticketPrice.value,
   });
 };
+
 
 const emitTrace = () => {
   emit("trace", {

@@ -18,6 +18,17 @@
               <input v-model="form.name" placeholder="Ruta" required />
             </label>
             <label class="field">
+              <span>Ticket price</span>
+              <input
+                type="number"
+                min="0"
+                step="0.01"
+                v-model.number="form.ticketPrice"
+                placeholder="0.00"
+                />
+              </label>
+
+            <label class="field">
               <span>Origin</span>
               <input v-model="form.originText" placeholder="CDMX" />
             </label>
@@ -71,7 +82,9 @@ const form = ref({
   name: "",
   originText: "",
   destinationText: "",
+  ticketPrice: 0,
 });
+
 
 const origin = ref(null);
 const destination = ref(null);
@@ -103,6 +116,7 @@ onMounted(async () => {
     name: data.name,
     originText: data.origin.name,
     destinationText: data.destination.name,
+    ticketPrice: data.ticketPrice ?? 0,
   };
 
   originalOrigin.value = data.origin.name;
@@ -141,6 +155,7 @@ const traceNewRoute = async () => {
 const save = async () => {
   await updateRoute(route.params.id, {
     name: form.value.name,
+    ticketPrice: form.value.ticketPrice,
     origin: origin.value,
     destination: destination.value,
   });

@@ -46,6 +46,7 @@ const router = useRouter();
 const isTraced = ref(false);
 const origin = ref(null);
 const destination = ref(null);
+
 const goBack = () => {
   router.back();
 };
