@@ -83,7 +83,7 @@
 
 <script>
 import ClientLayout from "../layouts/clientLayout.vue";
-import BusSeatGrid from "@/components/BusSeatGrid.vue";
+import BusSeatGrid from "@/components/busSeatGrid.vue";
 import { getTicketsByTrip } from "@/services/tripsApi";
 import { getTripById } from "@/services/scheduleApi";
 import { getBusById } from "@/services/fleetApi";
