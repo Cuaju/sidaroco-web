@@ -57,7 +57,7 @@ export async function getScheduleForDay(date) {
 }
 
 export async function createEmptySchedule(date) {
-  const res = await fetch(`${SCHEDULE_API}/schedule`, {
+  const res = await fetch(`${SCHEDULE_API}/schedule/`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ date: formatDate(date) }),
