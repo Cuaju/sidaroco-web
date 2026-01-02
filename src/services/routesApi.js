@@ -25,7 +25,7 @@ export async function getRoutes({ skip, take, q } = {}) {
 }
 
 export async function createRoute(payload) {
-  const res = await fetch(`${ROUTES_API}/routes`, {
+  const res = await fetch(`${ROUTES_API}/routes/`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

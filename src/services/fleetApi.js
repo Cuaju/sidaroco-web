@@ -30,7 +30,7 @@ export async function getBusById(id) {
 }
 
 export async function createBus(formData) {
-  const res = await fetch(`${FLEET_API}/buses`, {
+  const res = await fetch(`${FLEET_API}/buses/`, {
     method: "POST",
     body: formData, // FormData for multipart (photo upload)
   });
