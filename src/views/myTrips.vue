@@ -58,7 +58,7 @@ export default {
     "auth.account.id": {
       immediate: true,
       handler(newUserId) {
-        if (Number.isInteger(newUserId)) {
+        if (typeof newUserId === "string" && newUserId) {
           this.loadTickets();
         }
       }
@@ -71,10 +71,9 @@ export default {
       this.error = "";
 
       try {
-        const userId = Number(this.auth.account.id);
+        const userId = this.auth.account.id;
+        if (typeof userId !== "string") return;
         const token = this.auth.token;
-
-        if (!Number.isInteger(userId)) return;
 
         const tickets = await getTicketsByUser(userId, token);
 

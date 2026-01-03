@@ -13,22 +13,14 @@
               <div class="controlsSection">
                 <div class="sectionTitle">Number of Seats</div>
                 <div class="counter">
-                  <button 
-                    class="counterBtn" 
-                    @click="decrement" 
-                    :disabled="ticketsCount === 1"
-                  >
+                  <button class="counterBtn" @click="decrement" :disabled="ticketsCount === 1">
                     <span>−</span>
                   </button>
                   <div class="counterDisplay">
                     <span class="counterNumber">{{ ticketsCount }}</span>
                     <span class="counterLabel">{{ ticketsCount === 1 ? 'Seat' : 'Seats' }}</span>
                   </div>
-                  <button 
-                    class="counterBtn" 
-                    @click="increment" 
-                    :disabled="ticketsCount >= maxSelectable"
-                  >
+                  <button class="counterBtn" @click="increment" :disabled="ticketsCount >= maxSelectable">
                     <span>+</span>
                   </button>
                 </div>
@@ -58,16 +50,11 @@
                 </div>
               </div>
 
-              
+
             </div>
 
             <div class="rightPanel">
-              <BusSeatGrid 
-                v-if="seats.length" 
-                :seats="seats" 
-                :selected="selectedSeats" 
-                @select="selectSeat" 
-              />
+              <BusSeatGrid v-if="seats.length" :seats="seats" :selected="selectedSeats" @select="selectSeat" />
               <div class="actionsSection">
                 <button class="confirmBtn" @click="confirmPurchase" :disabled="selectedSeats.length === 0">
                   Continue to Payment
@@ -134,13 +121,13 @@ export default {
     increment() {
       if (this.ticketsCount >= this.maxSelectable) return;
       this.ticketsCount++;
-      
+
       this.autoSelectNextSeat();
     },
     decrement() {
       if (this.ticketsCount <= 1) return;
       this.ticketsCount--;
-      
+
       if (this.selectedSeats.length > this.ticketsCount) {
         this.selectedSeats.pop();
       }
@@ -149,18 +136,22 @@ export default {
       const nextAvailable = this.seats.find(
         seat => seat.available && !this.selectedSeats.includes(seat.number)
       );
-      
+
       if (nextAvailable && this.selectedSeats.length < this.ticketsCount) {
         this.selectedSeats.push(nextAvailable.number);
       }
     },
     confirmPurchase() {
       const { tripId } = this.$route.params;
-      
+
       this.$router.push({
         name: "purchaseConfirmation",
         params: { tripId },
-        query: { seats: this.selectedSeats.join(',') }
+        query: {
+          seats: this.selectedSeats.join(','),
+          date: this.$route.query.date,
+          time: this.$route.query.time
+        }
       });
     }
   }
@@ -369,6 +360,7 @@ export default {
     opacity: 0;
     transform: scale(0.8);
   }
+
   to {
     opacity: 1;
     transform: scale(1);

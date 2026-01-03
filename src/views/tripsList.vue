@@ -53,7 +53,11 @@ export default {
 
       this.$router.push({
         name: "seatSelection",
-        params: { tripId: trip.id }
+        params: { tripId: trip.id },
+        query: {
+          date: this.$route.query.date,
+          time: trip.departureTime
+        }
       });
     }
   }
@@ -100,11 +104,9 @@ p {
   min-height: 120px;
   padding: 24px;
   border-radius: 16px;
-  background: linear-gradient(
-    135deg,
-    rgba($secondaryColor, 0.15),
-    rgba($primaryColor, 0.08)
-  );
+  background: linear-gradient(135deg,
+      rgba($secondaryColor, 0.15),
+      rgba($primaryColor, 0.08));
   color: color.adjust($primaryColor, $lightness: -8%);
   font-weight: 800;
   font-size: 16px;

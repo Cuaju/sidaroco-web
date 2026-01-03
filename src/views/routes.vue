@@ -49,7 +49,7 @@ const goToCreateRoute = () => {
 onMounted(async () => {
   console.log("ANTES de getRoutes");
   try {
-    routes.value = await getRoutes();
+    routes.value = await getRoutes({ take: 100 });
     console.log("DESPUÉS de getRoutes");
   } catch (err) {
     console.error("Error cargando rutas", err);

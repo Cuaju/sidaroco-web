@@ -7,14 +7,14 @@
 
         <div class="searchCard">
           <div class="grid">
-            <select v-model="selectedOriginId">
+            <select v-model="selectedOriginName">
               <option value="" disabled>Select origin</option>
-              <option v-for="o in origins" :key="o.id" :value="o.id">
+              <option v-for="o in origins" :key="o.name" :value="o.name">
                 {{ o.name }}
               </option>
             </select>
 
-            <select v-model="selectedDestinationId" :disabled="!selectedOriginId">
+            <select v-model="selectedDestinationId" :disabled="!selectedOriginName">
               <option value="" disabled>Select destination</option>
               <option v-for="d in destinations" :key="d.id" :value="d.id">
                 {{ d.name }}
@@ -86,13 +86,14 @@ export default {
       destinations: [],
       selectedOriginId: "",
       selectedDestinationId: "",
-      selectedDate: ""
+      selectedDate: "",
+      selectedOriginName: "",
     };
   },
 
   computed: {
     canSearch() {
-      return this.selectedOriginId && this.selectedDestinationId && this.selectedDate;
+      return this.selectedOriginName && this.selectedDestinationId && this.selectedDate;
     }
   },
 
@@ -100,41 +101,55 @@ export default {
     this.routes = await getRoutes({ take: 100 });
 
     const originMap = new Map();
+
     this.routes.forEach(r => {
       if (r.origin) {
-        originMap.set(r.origin.id, r.origin.name);
+        const normalizedName = this.normalizeName(r.origin.name);
+
+        if (!originMap.has(normalizedName)) {
+          originMap.set(normalizedName, {
+            name: normalizedName,
+            originIds: new Set()
+          });
+        }
+
+        originMap.get(normalizedName).originIds.add(r.origin.id);
       }
     });
 
-    this.origins = Array.from(originMap.entries())
-      .map(([id, name]) => ({ id, name }))
+    this.origins = Array.from(originMap.values())
+      .map(o => ({
+        name: o.name,
+        originIds: Array.from(o.originIds)
+      }))
       .sort((a, b) => a.name.localeCompare(b.name, "es", { sensitivity: "base" }));
-
   },
 
   watch: {
-    selectedOriginId(originId) {
+    selectedOriginName(originName) {
       this.selectedDestinationId = "";
 
-      if (!originId) {
+      const origin = this.origins.find(o => o.name === originName);
+      if (!origin) {
         this.destinations = [];
         return;
       }
 
+      const originIds = origin.originIds;
       const destinationMap = new Map();
 
       this.routes
-        .filter(r => r.originId === originId)
+        .filter(r => originIds.includes(r.originId))
         .forEach(r => {
           if (r.destination) {
-            destinationMap.set(r.destination.id, r.destination.name);
+            const normalizedName = this.normalizeName(r.destination.name);
+            destinationMap.set(r.destination.id, normalizedName);
           }
         });
 
       this.destinations = Array.from(destinationMap.entries())
         .map(([id, name]) => ({ id, name }))
         .sort((a, b) => a.name.localeCompare(b.name, "es", { sensitivity: "base" }));
-
     }
   },
 
@@ -144,9 +159,14 @@ export default {
 
   methods: {
     searchTrip() {
+      const origin = this.origins.find(o => o.name === this.selectedOriginName);
+      if (!origin) {
+        return;
+      }
+
       const route = this.routes.find(
         r =>
-          r.originId === this.selectedOriginId &&
+          origin.originIds.includes(r.originId) &&
           r.destinationId === this.selectedDestinationId
       );
 
@@ -161,8 +181,18 @@ export default {
           date: this.selectedDate
         }
       });
-    }
+    },
 
+    normalizeName(value) {
+      if (!value) return "";
+      return value
+        .toString()
+        .trim()
+        .toLowerCase()
+        .split(/\s+/)
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(" ");
+    }
   }
 
 };

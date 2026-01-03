@@ -7,6 +7,29 @@
           <p>Loading trip information...</p>
         </div>
 
+        <div v-else-if="error409" class="errorState">
+          <div class="errorIcon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10" />
+              <line x1="12" y1="8" x2="12" y2="12" />
+              <line x1="12" y1="16" x2="12.01" y2="16" />
+            </svg>
+          </div>
+
+          <h1>Ticket Already Purchased</h1>
+          <p>You have already purchased a ticket for one or more of the selected seats</p>
+
+          <button class="backBtn" @click="goBack">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2">
+              <line x1="19" y1="12" x2="5" y2="12" />
+              <polyline points="12 19 5 12 12 5" />
+            </svg>
+            Select Different Seats
+          </button>
+        </div>
+
         <div v-else-if="success" class="successState">
           <div class="successIcon">
             <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none"
@@ -15,6 +38,7 @@
               <polyline points="22 4 12 14.01 9 11.01" />
             </svg>
           </div>
+
           <h1>Purchase Successful!</h1>
           <p>Your tickets have been confirmed</p>
 
@@ -59,41 +83,15 @@
               <div class="infoGrid">
                 <div class="infoItem">
                   <span class="infoLabel">Route</span>
-                  <span class="infoValue">{{ route?.origin }} → {{ route?.destination }}</span>
+                  <span class="infoValue">{{ route?.origin?.name }} → {{ route?.destination?.name }}</span>
                 </div>
                 <div class="infoItem">
                   <span class="infoLabel">Date</span>
-                  <span class="infoValue">{{ formatDate(trip?.date) }}</span>
+                  <span class="infoValue">{{ formatDate(trip?.departureTime) }}</span>
                 </div>
                 <div class="infoItem">
                   <span class="infoLabel">Time</span>
-                  <span class="infoValue">{{ trip?.hour }}</span>
-                </div>
-                <div class="infoItem">
-                  <span class="infoLabel">Bus</span>
-                  <span class="infoValue">{{ bus?.plateNumber }}</span>
-                </div>
-              </div>
-            </div>
-
-            <div class="summaryCard">
-              <div class="cardHeader">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-                  stroke="currentColor" stroke-width="2">
-                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                  <circle cx="12" cy="7" r="4" />
-                </svg>
-                <h2>Passenger Information</h2>
-              </div>
-
-              <div class="infoGrid">
-                <div class="infoItem">
-                  <span class="infoLabel">Name</span>
-                  <span class="infoValue">{{ user?.name }}</span>
-                </div>
-                <div class="infoItem">
-                  <span class="infoLabel">Email</span>
-                  <span class="infoValue">{{ user?.email }}</span>
+                  <span class="infoValue">{{ formatTime(trip?.departureTime) }}</span>
                 </div>
               </div>
             </div>
@@ -102,37 +100,17 @@
               <div class="cardHeader">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
                   stroke="currentColor" stroke-width="2">
-                  <rect x="1" y="4" width="22" height="16" rx="2" ry="2" />
-                  <line x1="1" y1="10" x2="23" y2="10" />
+                  <path d="M19 9V6a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v3" />
+                  <path d="M3 16a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v5z" />
+                  <path d="M5 18v3" />
+                  <path d="M19 18v3" />
                 </svg>
                 <h2>Selected Seats</h2>
               </div>
 
               <div class="seatsDisplay">
                 <div v-for="seat in selectedSeats" :key="seat" class="seatBadge">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" stroke-width="2">
-                    <path d="M19 9V6a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v3" />
-                    <path d="M3 16a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v5z" />
-                    <path d="M5 18v3" />
-                    <path d="M19 18v3" />
-                  </svg>
                   <span>Seat {{ seat }}</span>
-                </div>
-              </div>
-
-              <div class="totalSection">
-                <div class="totalRow">
-                  <span>Price per ticket</span>
-                  <span>${{ route?.price }}</span>
-                </div>
-                <div class="totalRow">
-                  <span>Number of tickets</span>
-                  <span>{{ selectedSeats.length }}</span>
-                </div>
-                <div class="totalRow total">
-                  <span>Total Amount</span>
-                  <span>${{ totalAmount }}</span>
                 </div>
               </div>
             </div>
@@ -154,10 +132,21 @@
 <script>
 import ClientLayout from "../layouts/clientLayout.vue";
 import { getTripById } from "@/services/scheduleApi";
-import { getBusById } from "@/services/fleetApi";
 import { getRouteById } from "@/services/routesApi";
 import { createTicket } from "@/services/ticketsApi";
-import { jwtDecode } from "jwt-decode";
+
+function parseJwt(token) {
+  try {
+    const base64Url = token.split('.')[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const jsonPayload = decodeURIComponent(atob(base64).split('').map(function (c) {
+      return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+    }).join(''));
+    return JSON.parse(jsonPayload);
+  } catch (e) {
+    return null;
+  }
+}
 
 export default {
   components: { ClientLayout },
@@ -166,8 +155,8 @@ export default {
       loading: true,
       processing: false,
       success: false,
+      error409: false,
       trip: null,
-      bus: null,
       route: null,
       user: null,
       selectedSeats: [],
@@ -176,7 +165,8 @@ export default {
   },
   computed: {
     totalAmount() {
-      return this.route?.price * this.selectedSeats.length || 0;
+      const price = this.route?.ticketPrice || 0;
+      return (price * this.selectedSeats.length).toFixed(2);
     }
   },
   async mounted() {
@@ -190,7 +180,7 @@ export default {
         return;
       }
 
-      const decoded = jwtDecode(token);
+      const decoded = parseJwt(token);
       this.user = decoded;
 
       this.selectedSeats = seats ? seats.split(',').map(Number) : [];
@@ -201,7 +191,7 @@ export default {
       }
 
       this.trip = await getTripById(Number(tripId));
-      this.bus = await getBusById(this.trip.busId);
+
       this.route = await getRouteById(this.trip.routeId);
 
       this.loading = false;
@@ -215,20 +205,29 @@ export default {
       this.processing = true;
       const token = localStorage.getItem("token");
       const { tripId } = this.$route.params;
-
+      console.log(this.user);
       try {
         const ticketPromises = this.selectedSeats.map(seatNumber =>
           createTicket({
-            userId: this.user.id,
+            userId: this.user.user_id,
             tripId: Number(tripId),
             seatNumber,
-            price: this.route.price
+            price: this.route.ticketPrice || 0,
+            saleDate: new Date().toISOString()
           }, token)
         );
 
         this.createdTickets = await Promise.all(ticketPromises);
         this.success = true;
       } catch (error) {
+        if (error?.message && error.message.includes("409")) {
+          this.error409 = true;
+          return;
+        }
+        if (error?.status === 409) {
+          this.error409 = true;
+          return;
+        }
         console.error("Error creating tickets:", error);
         alert("Error processing purchase. Please try again.");
       } finally {
@@ -240,15 +239,29 @@ export default {
       this.$router.push({ name: "seatSelection", params: { tripId } });
     },
     goToTrips() {
-      this.$router.push({ name: "trips" });
+      this.$router.push("/myTrips");
     },
-    formatDate(date) {
+    formatDate() {
+      const date = this.$route.query.date;
       if (!date) return "";
-      return new Date(date).toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
+      return new Date(date + "T00:00:00").toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "long",
+        day: "numeric"
       });
+    },
+    formatTime() {
+      const time = this.$route.query.time;
+      if (!time) return "";
+      return new Date(time).toLocaleTimeString("en-GB", {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false
+      });
+    },
+    formatPrice(price) {
+      if (price === null || price === undefined) return "0.00";
+      return Number(price).toFixed(2);
     }
   }
 };
@@ -469,18 +482,23 @@ export default {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 16px;
 }
 
 .infoLabel {
   color: #666;
   font-weight: 600;
   font-size: 14px;
+  flex-shrink: 0;
+  min-width: 80px;
 }
 
 .infoValue {
   color: #222;
   font-weight: 800;
   font-size: 15px;
+  text-align: right;
+  word-break: break-word;
 }
 
 .seatsDisplay {

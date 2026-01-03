@@ -1,7 +1,7 @@
 const TICKETS_API = import.meta.env.VITE_TICKET_API_URL;
 
 export async function getTicketsByUser(userId, token) {
-  if (!Number.isInteger(userId)) {
+  if (typeof userId !== "string" || !userId) {
     throw new Error("Invalid userId");
   }
 
@@ -50,7 +50,10 @@ export async function createTicket(payload, token) {
   const data = await res.json().catch(() => ({}));
 
   if (!res.ok) {
-    throw new Error(data.message || "Error al crear ticket");
+    const error = new Error(data.message || "Error creating ticket");
+    error.status = res.status;
+    error.response = { status: res.status, data };
+    throw error;
   }
 
   return data;

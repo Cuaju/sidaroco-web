@@ -134,6 +134,10 @@ const router = createRouter({
   routes,
 });
 
+router.afterEach(() => {
+  document.title = "SIDAROCO";
+});
+
 router.beforeEach((to, from, next) => {
   const auth = useAuthStore();
 
