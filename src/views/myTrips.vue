@@ -37,7 +37,7 @@ import ClientLayout from "../layouts/clientLayout.vue";
 import TicketCard from "../components/ticketCard.vue";
 import { useAuthStore } from "../stores/authStore";
 import { getTicketsByUser } from "@/services/ticketsApi";
-import { getTripsByIds } from "@/services/scheduleApi";
+import { getTripsByIds, getScheduleById } from "@/services/scheduleApi";
 import { getRouteById } from "@/services/routesApi";
 
 export default {
@@ -88,8 +88,43 @@ export default {
         const trips = await getTripsByIds(tripIds, token);
         console.log('🚌 Trips received:', trips);
 
+        const scheduleIds = [...new Set(trips.map(t => t.dailyScheduleId).filter(Boolean))];
+        console.log('Schedule IDs:', scheduleIds);
+        
+        const schedules = await Promise.all(
+          scheduleIds.map(async (id) => {
+            try {
+              return await getScheduleById(id);
+            } catch {
+              return null;
+            }
+          })
+        );
+        console.log('Schedules received:', schedules);
+        
+        const schedulesById = Object.fromEntries(
+          schedules.filter(Boolean).map(s => [s.id, s])
+        );
+
         const tripsById = Object.fromEntries(
-          trips.map(t => [t.id, t])
+          trips.map(t => {
+            const schedule = schedulesById[t.dailyScheduleId];
+            if (schedule?.serviceDate && t.departureTime) {
+              const timeOnly = new Date(t.departureTime);
+              const serviceDate = new Date(schedule.serviceDate);
+              
+              const combinedDateTime = new Date(serviceDate);
+              combinedDateTime.setUTCHours(
+                timeOnly.getUTCHours(),
+                timeOnly.getUTCMinutes(),
+                timeOnly.getUTCSeconds(),
+                0
+              );
+              
+              return [t.id, { ...t, departureTime: combinedDateTime.toISOString() }];
+            }
+            return [t.id, t];
+          })
         );
 
         // Fetch route information for each trip

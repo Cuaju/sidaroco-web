@@ -254,3 +254,14 @@ export async function getTripById(tripId) {
 
   return data;
 }
+
+export async function getScheduleById(scheduleId) {
+  const res = await fetch(`${SCHEDULE_API}/schedule/byId/${scheduleId}`);
+  const data = await res.json().catch(() => ({}));
+
+  if (!res.ok) {
+    throw new Error(data.message || "Error al obtener schedule por ID");
+  }
+
+  return data;
+}
