@@ -38,7 +38,7 @@ export async function getTicketById(id, token) {
 }
 
 export async function createTicket(payload, token) {
-  const res = await fetch(`${TICKETS_API}/tickets`, {
+  const res = await fetch(`${TICKETS_API}/tickets/`, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${token}`,
