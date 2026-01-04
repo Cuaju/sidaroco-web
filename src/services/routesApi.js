@@ -23,24 +23,36 @@ export async function getRoutes({ skip, take, q } = {}) {
 
   return data;
 }
-
-export async function createRoute(payload) {
-  const res = await fetch(`${ROUTES_API}/routes/`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(payload),
+export async function toggleFeatured(id) {
+  const res = await fetch(`${ROUTES_API}/routes/${id}/toggleFeatured`, {
+    method: "PATCH",
   });
 
   const data = await res.json().catch(() => ({}));
 
   if (!res.ok) {
-    throw new Error(data.message || "Error al crear ruta");
+    throw new Error(data.detail || data.message || "Error toggling featured");
   }
 
   return data;
 }
+
+export async function createRoute(formData) {
+  const res = await fetch(`${ROUTES_API}/routes`, {
+    method: "POST",
+    body: formData, 
+  });
+
+  const data = await res.json().catch(() => ({}));
+
+  if (!res.ok) {
+    console.error("BACKEND RESPONSE:", data);
+    throw new Error(data.detail || data.message || "Error creating route");
+  }
+
+  return data;
+}
+
 export async function deleteRoute(id) {
   const res = await fetch(`${ROUTES_API}/routes/${id}`, {
     method: "DELETE",
@@ -54,23 +66,26 @@ export async function deleteRoute(id) {
   return true;
 }
 
-export async function updateRoute(id, payload) {
+export async function updateRoute(id, formData) {
   const res = await fetch(`${ROUTES_API}/routes/${id}`, {
     method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(payload),
+    body: formData,
   });
 
   const data = await res.json().catch(() => ({}));
 
+  console.log("UPDATE ROUTE RESPONSE", res.status, data);
+
   if (!res.ok) {
-    throw new Error(data.message || "Error al actualizar ruta");
+    throw new Error(
+      data.detail || data.message || "Error updating route"
+    );
   }
 
   return data;
 }
+
+
 export async function getRouteById(id) {
   const res = await fetch(`${ROUTES_API}/routes/${id}`);
 
@@ -82,3 +97,4 @@ export async function getRouteById(id) {
 
   return data;
 }
+

@@ -67,11 +67,19 @@ const geocode = async (place) => {
   return { name: place, lat, lng };
 };
 
-const saveRoute = async ({ name, originText, destinationText, ticketPrice }) => {
+const saveRoute = async ({
+  name,
+  originText,
+  destinationText,
+  ticketPrice,
+  featured,
+  photo,
+}) => {
   if (!isTraced.value) {
     toast.warning("You must draw the route first");
     return;
   }
+
   try {
     const originCoords = await geocode(originText);
     const destinationCoords = await geocode(destinationText);
@@ -81,23 +89,27 @@ const saveRoute = async ({ name, originText, destinationText, ticketPrice }) => 
       return;
     }
 
-    origin.value = originCoords;
-    destination.value = destinationCoords;
+    const formData = new FormData();
+    formData.append("name", name);
+    formData.append("ticketPrice", ticketPrice);
+    formData.append("featured", featured);
+    formData.append("origin", JSON.stringify(originCoords));
+    formData.append("destination", JSON.stringify(destinationCoords));
 
-    await createRoute({
-      name,
-      ticketPrice,
-      origin: originCoords,
-      destination: destinationCoords,
-    });
+    if (photo) {
+      formData.append("photo", photo);
+    }
+
+    await createRoute(formData);
 
     toast.success("Route saved successfully");
     router.back();
   } catch (err) {
-    console.error("Error al guardar ruta:", err);
-    toast.error("Error saving the route");
+    console.error(err);
+    toast.error("Error saving route");
   }
 };
+
 const traceRoute = async ({ originText, destinationText }) => {
   try {
     const originCoords = await geocode(originText);

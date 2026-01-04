@@ -37,7 +37,26 @@
               <input v-model="form.destinationText" placeholder="Toluca" />
             </label>
           </div>
-
+          <div class="imageBlock">
+            <div class="imagePreview">
+              <img
+                v-show="previewImage"
+                :src="previewImage"
+                alt="Route image"
+              />
+            </div>
+            <div class="imageActions">
+              <label class="imageBtn">
+                Change image
+                <input
+                  type="file"
+                  accept="image/*"
+                  hidden
+                  @change="onImageChange"
+                />
+              </label>
+            </div>
+          </div>
           <button
             type="button"
             class="traceBtn"
@@ -71,8 +90,6 @@ import { useRoute, useRouter } from "vue-router";
 import MapPicker from "@/components/mapPicker.vue";
 import { getRouteById, updateRoute } from "@/services/routesApi";
 import { useToast } from "vue-toastification";
-import RouteManagerLayout from "@/layouts/routeManagerLayout.vue";
-
 
 const router = useRouter();
 const route = useRoute();
@@ -83,6 +100,7 @@ const form = ref({
   originText: "",
   destinationText: "",
   ticketPrice: 0,
+  photo: null,
 });
 
 
@@ -93,6 +111,9 @@ const originalOrigin = ref("");
 const originalDestination = ref("");
 
 const routeTraced = ref(true);
+
+const imageFile = ref(null);
+const previewImage = ref(null);
 
 const goBack = () => router.back();
 
@@ -111,6 +132,7 @@ const geocode = async (place) => {
 
 onMounted(async () => {
   const data = await getRouteById(route.params.id);
+  console.log("Photo URL:", data.photoKey);
 
   form.value = {
     name: data.name,
@@ -124,6 +146,8 @@ onMounted(async () => {
 
   origin.value = data.origin;
   destination.value = data.destination;
+
+  previewImage.value = data.photoKey || null;
 });
 
 watch(
@@ -137,6 +161,24 @@ watch(
 
 const canTrace = computed(() => !routeTraced.value);
 const canSave = computed(() => routeTraced.value);
+
+const onImageChange = (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  if (!file.type.startsWith("image/")) {
+    toast.error("Only image files allowed");
+    return;
+  }
+
+  if (file.size > 2 * 1024 * 1024) {
+    toast.error("Image must be under 2MB");
+    return;
+  }
+
+  imageFile.value = file;
+  previewImage.value = URL.createObjectURL(file);
+};
 
 const traceNewRoute = async () => {
   const o = await geocode(form.value.originText);
@@ -153,16 +195,25 @@ const traceNewRoute = async () => {
 };
 
 const save = async () => {
-  await updateRoute(route.params.id, {
-    name: form.value.name,
-    ticketPrice: form.value.ticketPrice,
-    origin: origin.value,
-    destination: destination.value,
-  });
+  const fd = new FormData();
+
+  fd.append("name", form.value.name);
+  fd.append("ticketPrice", String(form.value.ticketPrice));
+  fd.append("origin", JSON.stringify(origin.value));
+  fd.append("destination", JSON.stringify(destination.value));
+
+  if (imageFile.value) {
+  fd.append("photo", imageFile.value);
+}
+
+
+  await updateRoute(route.params.id, fd);
 
   toast.success("Route updated");
   router.push("/routes");
 };
+
+
 </script>
 
 <style scoped lang="scss">
@@ -295,4 +346,57 @@ const save = async () => {
 .map {
   min-height: 420px;
 }
+.imageBlock {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin-bottom: 12px;
+}
+
+.imagePreview {
+  width: 140px;
+  height: 100px;
+  border-radius: 16px;
+  overflow: hidden;
+  background: rgba($primaryColor, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  display: block;   
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .placeholder {
+    font-size: 12px;
+    font-weight: 900;
+    color: rgba($primaryColor, 0.6);
+  }
+}
+
+.imageActions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.imageBtn {
+  padding: 10px 16px;
+  border-radius: 14px;
+  background: rgba($thirdColor, 0.18);
+  color: $thirdColor;
+  font-weight: 900;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+
+  &:hover {
+    background: rgba($thirdColor, 0.28);
+  }
+}
+
+
 </style>

@@ -7,17 +7,17 @@
         <span>Route name</span>
         <input v-model="routeName" placeholder="Route" />
       </label>
+
       <label class="field">
-       <span>Ticket price</span>
+        <span>Ticket price</span>
         <input
           type="number"
           min="0"
           step="0.01"
           v-model.number="ticketPrice"
           placeholder="250.00"
-          />
+        />
       </label>
-
 
       <label class="field">
         <span>Origin</span>
@@ -28,14 +28,23 @@
         <span>Destination</span>
         <input v-model="destinationText" placeholder="Toluca" />
       </label>
+      <label class="field">
+        <span>Route image</span>
+        <input type="file" accept="image/*" @change="onFileChange" />
+
+        <div v-if="preview" class="imagePreview">
+          <img :src="preview" alt="Route preview" />
+        </div>
+      </label>
     </div>
+
     <div class="actions">
       <button
         class="traceBtn"
         :disabled="!originText || !destinationText"
         @click="emitTrace"
       >
-      Draw route
+        Draw route
       </button>
 
       <button
@@ -53,19 +62,29 @@
 import { ref } from "vue";
 
 defineProps({
-  isTraced: {
-    type: Boolean,
-    default: false,
-  },
+  isTraced: Boolean,
 });
 
 const routeName = ref("");
 const originText = ref("");
 const destinationText = ref("");
 const ticketPrice = ref(0);
-
+const featured = ref(false);
+const photo = ref(null);
+const preview = ref(null);
 
 const emit = defineEmits(["save", "trace"]);
+
+const onFileChange = (e) => {
+  const file = e.target.files[0] || null;
+  photo.value = file;
+
+  if (file) {
+    preview.value = URL.createObjectURL(file);
+  } else {
+    preview.value = null;
+  }
+};
 
 const emitSave = () => {
   emit("save", {
@@ -73,9 +92,10 @@ const emitSave = () => {
     originText: originText.value,
     destinationText: destinationText.value,
     ticketPrice: ticketPrice.value,
+    featured: featured.value,
+    photo: photo.value,
   });
 };
-
 
 const emitTrace = () => {
   emit("trace", {
@@ -135,6 +155,64 @@ const emitTrace = () => {
       input:focus {
         border-color: $thirdColor;
         box-shadow: 0 0 0 4px rgba($thirdColor, 0.25);
+      }
+
+      input[type="file"] {
+        height: auto;
+        padding: 10px;
+        border: 1px dashed rgba($primaryColor, 0.45);
+        cursor: pointer;
+
+        &::file-selector-button {
+          margin-right: 12px;
+          padding: 8px 14px;
+          border: none;
+          border-radius: 10px;
+          background: $thirdColor;
+          color: $primaryColor;
+          font-weight: 900;
+          cursor: pointer;
+          transition: all 0.2s ease;
+        }
+
+        &::file-selector-button:hover {
+          filter: brightness(0.95);
+        }
+      }
+    }
+
+    .imagePreview {
+      margin-top: 10px;
+      border-radius: 14px;
+      overflow: hidden;
+      border: 2px solid rgba($primaryColor, 0.25);
+
+      img {
+        width: 100%;
+        height: 160px;
+        object-fit: cover;
+        display: block;
+      }
+    }
+
+    .field.checkbox {
+      flex-direction: row;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 14px;
+      border-radius: 12px;
+      border: 1px solid rgba($primaryColor, 0.35);
+      background: rgba($fourthColor, 0.85);
+
+      input[type="checkbox"] {
+        width: 20px;
+        height: 20px;
+        accent-color: $thirdColor;
+        cursor: pointer;
+      }
+
+      span {
+        font-weight: 900;
       }
     }
   }
