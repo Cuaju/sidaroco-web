@@ -8,7 +8,7 @@ console.log("FLEET_API =", FLEET_API);
 export async function getAllBuses() {
   console.log("getAllBuses ejecutándose");
 
-  const res = await fetch(`${FLEET_API}/buses`);
+  const res = await fetch(`${FLEET_API}/buses/`);
   console.log("STATUS =", res.status);
 
   const data = await res.json();
@@ -99,7 +99,7 @@ export async function getDriverById(id) {
 }
 
 export async function createDriver(formData) {
-  const res = await fetch(`${FLEET_API}/drivers`, {
+  const res = await fetch(`${FLEET_API}/drivers/`, {
     method: "POST",
     body: formData, // FormData for multipart (photo upload)
   });
