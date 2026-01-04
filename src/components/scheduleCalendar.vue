@@ -46,9 +46,9 @@ const emit = defineEmits(["select"]);
 
 const today = new Date();
 const year = ref(today.getFullYear());
-const month = ref(today.getMonth()); // 0-indexed
+const month = ref(today.getMonth());
 
-const scheduleSummary = ref({}); // { "YYYY-MM-DD": { tripCount, isLocked } }
+const scheduleSummary = ref({}); 
 
 const weekDays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
@@ -64,17 +64,16 @@ const monthName = computed(() => monthNames[month.value]);
 const calendarCells = computed(() => {
   const firstDay = new Date(year.value, month.value, 1);
   const lastDay = new Date(year.value, month.value + 1, 0);
-  const startPad = firstDay.getDay(); // 0 = Sunday
+  const startPad = firstDay.getDay(); 
   const daysInMonth = lastDay.getDate();
 
   const cells = [];
 
-  // Pad start
   for (let i = 0; i < startPad; i++) {
     cells.push({ day: null });
   }
 
-  // Days
+
   for (let d = 1; d <= daysInMonth; d++) {
     const date = new Date(year.value, month.value, d);
     const dateStr = formatDate(date);
@@ -138,7 +137,6 @@ async function loadMonthSummary() {
 
     const data = await getScheduleRange(formatDate(from), formatDate(to));
 
-    // Build lookup map
     const map = {};
     for (const item of data) {
       const dateKey = item.serviceDate?.split("T")[0] || item.date;
@@ -154,30 +152,26 @@ async function loadMonthSummary() {
   }
 }
 
-// Reload when month changes
 watch([year, month], loadMonthSummary, { immediate: true });
 
-// Expose refresh method for parent
 defineExpose({ refresh: loadMonthSummary });
 </script>
 
 <style scoped lang="scss">
 @use "../styles/colors.scss" as *;
 
-// Variables para control fácil
-$cell-min-height: 45px; // Altura mínima de cada día
-$calendar-width: 340px; // Ancho fijo un poco más holgado para que quepa el texto
+$cell-min-height: 45px; 
+$calendar-width: 340px; 
 
 .calendarWrapper {
   background: white;
   border-radius: 16px;
-  padding: 16px; // Un poco más de aire
+  padding: 16px; 
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
   
-  // Aquí arreglamos el ancho fijo:
   width: 100%; 
   max-width: $calendar-width; 
-  margin: 0 auto; // Centrado si está en un contenedor más grande
+  margin: 0 auto; 
   box-sizing: border-box;
 }
 
@@ -187,18 +181,16 @@ $calendar-width: 340px; // Ancho fijo un poco más holgado para que quepa el tex
   justify-content: space-between;
   margin-bottom: 16px;
   
-  // Evita que el título empuje el ancho si es muy largo
   .monthTitle {
     margin: 0 8px;
     font-size: 1rem;
     font-weight: 900;
     color: $primaryColor;
-    white-space: nowrap; // Evita saltos de línea feos en el título
-  }
+    white-space: nowrap; 
 }
 
 .navBtn {
-  flex-shrink: 0; // Evita que los botones se aplasten
+  flex-shrink: 0; 
   width: 32px;
   height: 32px;
   border: none;
@@ -217,12 +209,11 @@ $calendar-width: 340px; // Ancho fijo un poco más holgado para que quepa el tex
   }
 }
 
-// Grid layout compartido para días de semana y celdas
 .weekDays,
 .calendarGrid {
   display: grid;
-  grid-template-columns: repeat(7, 1fr); // 7 columnas iguales
-  gap: 4px; // Espacio consistente
+  grid-template-columns: repeat(7, 1fr); 
+  gap: 4px; 
   width: 100%;
 }
 
@@ -240,31 +231,29 @@ $calendar-width: 340px; // Ancho fijo un poco más holgado para que quepa el tex
 }
 
 .dayCell {
-  // CLAVE: Altura dinámica
   min-height: $cell-min-height; 
-  height: auto; // Permite crecer si el contenido es grande
+  height: auto; 
   
-  width: 100%; // Ocupa todo el ancho de su columna (1fr)
+  width: 100%; 
   border-radius: 8px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-start; // Alinea contenido arriba
-  padding: 4px 2px; // Padding interno para que el texto no toque bordes
+  justify-content: flex-start; 
+  padding: 4px 2px; 
   
   cursor: pointer;
   transition: all 0.15s ease;
   position: relative;
   background: rgba($primaryColor, 0.02);
-  box-sizing: border-box; // Importante para que el padding no rompa el grid
+  box-sizing: border-box; 
 
-  // Esto previene que una celda con texto largo rompa el grid
   overflow: hidden; 
 
   &.empty {
     background: transparent;
     cursor: default;
-    pointer-events: none; // Evita clicks en días vacíos
+    pointer-events: none; 
   }
 
   &:not(.empty):hover {
@@ -273,7 +262,6 @@ $calendar-width: 340px; // Ancho fijo un poco más holgado para que quepa el tex
 
   &.today {
     border: 2px solid $secondaryColor;
-    // Ajustamos padding para compensar el borde y que no se vea más grande
     padding: 2px 0; 
   }
 
@@ -315,26 +303,23 @@ $calendar-width: 340px; // Ancho fijo un poco más holgado para que quepa el tex
   line-height: 1.1;
   text-align: center;
   
-  // Asegura que si el texto es muy largo, se rompa en varias líneas
   word-break: break-word; 
   width: 100%;
 }
 
-// Ajustes responsivos
 @media (max-width: 400px) {
   .calendarWrapper {
-    max-width: 100%; // En móviles ocupa todo el ancho disponible
+    max-width: 100%; 
     padding: 10px;
   }
 
   .dayCell {
-    min-height: 40px; // Un poco más compacto en móvil
+    min-height: 40px; 
   }
   
   .tripCount {
     font-size: 0.55rem;
-    // Opcional: Si en móvil se ve muy mal, puedes ocultar el texto "viajes"
-    // y dejar solo el número, o usar display: none;
+
   }
-}
+}}
 </style>
