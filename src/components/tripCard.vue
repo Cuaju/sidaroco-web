@@ -1,291 +1,386 @@
 <template>
-  <div class="tripCard" :class="{ canceled: trip.status === 'canceled', completed: trip.status === 'completed' }">
-    <div class="tripMain">
-      <div class="tripTime">
-        {{ formatTime(trip.departureTime) }}
-      </div>
-
-      <div class="tripInfo">
-        <div class="tripRoute">
-          <span class="label">Route</span>
-          <span class="value">{{ trip.routeId }}</span>
-        </div>
-        <div class="tripBus">
-          <span class="label">Bus</span>
-          <span class="value">{{ trip.busId }}</span>
-        </div>
-        <div class="tripDriver">
-          <span class="label">Driver</span>
-          <span class="value">{{ trip.driverId }}</span>
-        </div>
-      </div>
-
-      <div class="tripStatus">
-        <span class="statusBadge" :class="trip.status">
-          {{ statusLabel }}
-        </span>
-      </div>
+  <article class="tripCard" :class="{ expanded }" @click="toggleExpand">
+    <div v-if="!expanded" class="collapsedRow">
+      <span class="cell route">{{ routeName }}</span>
+      <span class="cell date">{{ formatDate(tripDateTime) }}</span>
+      <span class="cell price">${{ ticket.price }}</span>
+      <span class="cell statusBadge" :class="tripStatus.class">
+        {{ tripStatus.label }}
+      </span>
+      <span class="cell expandIcon">▼</span>
     </div>
 
-    <div class="tripActions" v-if="!isLocked">
-      <template v-if="trip.status === 'scheduled'">
-        <button class="actionBtn complete" @click="$emit('complete', trip.id)" title="Complete">
-          ✓
+    <template v-else>
+      <div class="cardBody">
+        <div class="header">
+          <div class="titleRow">
+            <span class="route">{{ routeName }}</span>
+            <span class="ticketId">#{{ ticket.id }}</span>
+          </div>
+          <div class="headerRight">
+            <div class="statusBadge" :class="tripStatus.class">
+              {{ tripStatus.label }}
+            </div>
+            <span class="collapseIcon">▲</span>
+          </div>
+        </div>
+
+        <div class="details">
+          <div class="detailItem">
+            <div class="detailContent">
+              <span class="label">Date</span>
+              <span class="value">{{ formatDate(tripDateTime) }}</span>
+            </div>
+          </div>
+
+          <div class="detailItem">
+            <div class="detailContent">
+              <span class="label">Time</span>
+              <span class="value">{{ formatTime(tripDateTime) }}</span>
+            </div>
+          </div>
+
+          <div class="detailItem">
+            <div class="detailContent">
+              <span class="label">Seat Number</span>
+              <span class="value">{{ ticket.seatNumber }}</span>
+            </div>
+          </div>
+
+          <div class="detailItem">
+            <div class="detailContent">
+              <span class="label">Price</span>
+              <span class="value">${{ ticket.price }}</span>
+            </div>
+          </div>
+
+          <div v-if="ticket.route" class="detailItem full">
+            <div class="detailContent">
+              <span class="label">Route</span>
+              <span class="value">{{ ticket.route.name }}</span>
+            </div>
+          </div>
+        </div>
+
+        <button class="downloadBtn" @click.stop="downloadPdf">
+          Download PDF ticket
         </button>
-        <button class="actionBtn cancel" @click="$emit('cancel', trip.id)" title="Cancel">
-          ✕
-        </button>
-        <button class="actionBtn edit" @click="$emit('edit', trip)" title="Edit">
-          ✎
-        </button>
-        <button class="actionBtn delete" @click="confirmDelete" title="Delete">
-          🗑
-        </button>
-      </template>
-      <template v-else>
-        <span class="finalized">Finalized</span>
-      </template>
-    </div>
-    <div class="tripActions" v-else>
-      <span class="lockedLabel">Locked</span>
-    </div>
-  </div>
+
+      </div>
+    </template>
+  </article>
 </template>
 
-<script setup>
-import { computed } from "vue";
-import Swal from "sweetalert2";
+<script>
+import sidarocoLogo from "@/assets/images/logoBase64";
+import { buildTicketPdf } from "@/utils/ticketPdfBuilder";
+import { useAuthStore } from "@/stores/authStore";
+export default {
+  name: "TripCard",
 
-const props = defineProps({
-  trip: { type: Object, required: true },
-  isLocked: { type: Boolean, default: false },
-});
+  props: {
+    ticket: {
+      type: Object,
+      required: true,
+    },
+  },
 
-const emit = defineEmits(["edit", "delete", "cancel", "complete"]);
+  data() {
+    return {
+      expanded: false,
+    };
+  },
 
-const statusLabel = computed(() => {
-  const map = {
-    scheduled: "Scheduled",
-    canceled: "Canceled",
-    completed: "Completed",
-  };
-  return map[props.trip.status] || props.trip.status;
-});
+  computed: {
+    routeName() {
+      console.log('🔍 ROUTE DATA:', this.ticket.route);
 
-function formatTime(dateStr) {
-  if (!dateStr) return "--:--";
-  const d = new Date(dateStr);
-  return d.toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit" });
-}
+      if (this.ticket.route?.name) {
+        return this.ticket.route.name;
+      }
+      return "Route not available";
+    },
 
-async function confirmDelete() {
-  const result = await Swal.fire({
-    title: "Delete trip?",
-    text: "This action cannot be undone",
-    icon: "warning",
-    showCancelButton: true,
-    confirmButtonColor: "#d33",
-    cancelButtonColor: "#3085d6",
-    confirmButtonText: "Yes, delete",
-    cancelButtonText: "Cancel",
-  });
+    auth() {
+      return useAuthStore();
+    },
 
-  if (result.isConfirmed) {
-    emit("delete", props.trip.id);
-  }
-}
+    tripDateTime() {
+      if (!this.ticket.trip?.departureTime) return null;
+      return new Date(this.ticket.trip.departureTime);
+    },
+
+    tripStatus() {
+      console.log('🔍 TRIP DATA:', this.ticket.trip);
+
+      if (!this.tripDateTime) {
+        return { label: "Unknown", class: "unknown" };
+      }
+
+      const now = new Date();
+
+      if (this.tripDateTime < now) {
+        return { label: "Completed", class: "completed" };
+      } else {
+        return { label: "Upcoming", class: "upcoming" };
+      }
+    },
+
+    debugInfo() {
+      return {
+        ticket: this.ticket,
+        routeName: this.routeName,
+        tripStatus: this.tripStatus,
+        tripDateTime: this.tripDateTime,
+        route: this.ticket.route,
+        trip: this.ticket.trip
+      };
+    }
+  },
+
+  methods: {
+    toggleExpand() {
+      this.expanded = !this.expanded;
+    },
+
+    formatDate(date) {
+      if (!date) return "N/A";
+
+      const dateObj = date instanceof Date ? date : new Date(date);
+
+      return dateObj.toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      });
+    },
+
+    formatTime(date) {
+      if (!date) return "N/A";
+
+      const dateObj = date instanceof Date ? date : new Date(date);
+
+      return dateObj.toLocaleTimeString("en-US", {
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+    },
+    async downloadPdf() {
+      const purchaseDate = new Date(this.ticket.createdAt);
+
+      const account = this.auth.account;
+
+      await buildTicketPdf({
+        ticketId: this.ticket.id,
+        routeName: this.normalizeRouteName(this.routeName),
+        travelDate: this.formatDate(this.tripDateTime),
+        travelTime: this.formatTime(this.tripDateTime),
+        purchaseDateTime: purchaseDate.toLocaleString("en-US"),
+        seat: this.ticket.seatNumber,
+        price: this.ticket.price,
+        username: account?.username ?? "—",
+        email: account?.email ?? "—",
+        logoBase64: sidarocoLogo
+      });
+    },
+    normalizeRouteName(name) {
+      if (typeof name !== "string") return "—";
+      return name.replace(/[^a-zA-ZÀ-ÿ0-9\s]/g, "").replace(/\s+/g, " ").trim().replace(" ", " -> ");
+    }
+  },
+};
 </script>
 
 <style scoped lang="scss">
 @use "../styles/colors.scss" as *;
 
 .tripCard {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  padding: 14px 18px;
-  background: white;
   border-radius: 12px;
-  border-left: 4px solid $secondaryColor;
+  background: $fourthColor;
+  border: 1px solid rgba($primaryColor, 0.1);
+  overflow: hidden;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
+  cursor: pointer;
 
   &:hover {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border-color: rgba($secondaryColor, 0.3);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
   }
 
-  &.canceled {
-    border-left-color: #dc3545;
-    opacity: 0.7;
-  }
+  &.expanded {
+    cursor: default;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
 
-  &.completed {
-    border-left-color: #28a745;
+    &:hover {
+      transform: none;
+    }
   }
 }
 
-.tripMain {
+/* COLLAPSED ROW */
+.collapsedRow {
+  display: grid;
+  grid-template-columns: 2fr 1fr 100px 120px 40px;
+  align-items: center;
+  padding: 14px 20px;
+  gap: 16px;
+}
+
+.cell {
+  font-size: 14px;
+  font-weight: 600;
+  color: $primaryColor;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  &.route {
+    font-weight: 800;
+  }
+
+  &.price {
+    font-weight: 700;
+    color: $secondaryColor;
+  }
+}
+
+.expandIcon,
+.collapseIcon {
+  font-size: 12px;
+  color: rgba($primaryColor, 0.4);
+  transition: transform 0.2s ease;
+}
+
+.collapseIcon {
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+
+  &:hover {
+    background: rgba($primaryColor, 0.1);
+  }
+}
+
+/* EXPANDED CARD */
+.cardBody {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.headerRight {
   display: flex;
   align-items: center;
-  gap: 24px;
-  flex: 1;
+  gap: 12px;
 }
 
-.tripTime {
-  font-size: 1.4rem;
-  font-weight: 900;
-  color: $primaryColor;
-  min-width: 70px;
-}
-
-.tripInfo {
-  display: flex;
-  gap: 24px;
-  flex-wrap: wrap;
-}
-
-.tripRoute,
-.tripBus,
-.tripDriver {
+.titleRow {
   display: flex;
   flex-direction: column;
   gap: 2px;
-
-  .label {
-    font-size: 0.7rem;
-    font-weight: 700;
-    color: rgba($primaryColor, 0.5);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
-
-  .value {
-    font-size: 0.95rem;
-    font-weight: 700;
-    color: $primaryColor;
-  }
 }
 
-.tripStatus {
-  margin-left: auto;
+.cardBody .route {
+  font-size: 20px;
+  font-weight: 900;
+  color: $primaryColor;
+}
+
+.cardBody .ticketId {
+  font-size: 13px;
+  font-weight: 700;
+  color: rgba($primaryColor, 0.5);
 }
 
 .statusBadge {
   padding: 6px 12px;
   border-radius: 20px;
-  font-size: 0.75rem;
-  font-weight: 700;
+  font-size: 11px;
+  font-weight: 800;
   text-transform: uppercase;
+  letter-spacing: 0.5px;
 
-  &.scheduled {
+  &.upcoming {
     background: rgba($secondaryColor, 0.15);
     color: $secondaryColor;
   }
 
-  &.canceled {
-    background: rgba(220, 53, 69, 0.15);
-    color: #dc3545;
-  }
-
   &.completed {
-    background: rgba(40, 167, 69, 0.15);
-    color: #28a745;
+    background: rgba($primaryColor, 0.12);
+    color: $primaryColor;
+  }
+
+  &.unknown {
+    background: rgba(#999, 0.15);
+    color: #666;
   }
 }
 
-.tripActions {
-  display: flex;
-  gap: 8px;
-  align-items: center;
+.details {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
 }
 
-.actionBtn {
-  width: 34px;
-  height: 34px;
+.detailItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  &.full {
+    grid-column: 1 / -1;
+  }
+}
+
+.detailContent {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.label {
+  font-size: 11px;
+  font-weight: 700;
+  color: rgba($primaryColor, 0.5);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.value {
+  font-size: 14px;
+  font-weight: 700;
+  color: $primaryColor;
+}
+
+.downloadBtn {
+  margin-top: 18px;
+  padding: 12px 18px;
+  border-radius: 10px;
   border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 1rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.15s ease;
-
-  &.complete {
-    background: rgba(40, 167, 69, 0.1);
-    color: #28a745;
-
-    &:hover {
-      background: #28a745;
-      color: white;
-    }
-  }
-
-  &.cancel {
-    background: rgba(220, 53, 69, 0.1);
-    color: #dc3545;
-
-    &:hover {
-      background: #dc3545;
-      color: white;
-    }
-  }
-
-  &.edit {
-    background: rgba($secondaryColor, 0.1);
-    color: $secondaryColor;
-
-    &:hover {
-      background: $secondaryColor;
-      color: white;
-    }
-  }
-
-  &.delete {
-    background: rgba(108, 117, 125, 0.1);
-    color: #6c757d;
-
-    &:hover {
-      background: #6c757d;
-      color: white;
-    }
-  }
-}
-
-.finalized,
-.lockedLabel {
-  font-size: 0.8rem;
+  background: linear-gradient(135deg, #1f2933, #111827);
+  color: #fff;
   font-weight: 600;
-  color: rgba($primaryColor, 0.4);
-  font-style: italic;
-}
+  letter-spacing: 0.3px;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
 
-@media (max-width: 640px) {
-  .tripCard {
-    flex-direction: column;
-    align-items: flex-start;
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.25);
+    opacity: 0.95;
   }
 
-  .tripMain {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
-  }
-
-  .tripInfo {
-    gap: 16px;
-  }
-
-  .tripStatus {
-    margin-left: 0;
-  }
-
-  .tripActions {
-    width: 100%;
-    justify-content: flex-end;
-    padding-top: 12px;
-    border-top: 1px solid rgba($primaryColor, 0.1);
+  &:active {
+    transform: translateY(0);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
   }
 }
 </style>
