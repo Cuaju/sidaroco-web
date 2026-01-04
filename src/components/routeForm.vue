@@ -60,6 +60,7 @@
 
 <script setup>
 import { ref } from "vue";
+import { compressImage } from "@/utils/imageCompressor";
 
 defineProps({
   isTraced: Boolean,
@@ -75,13 +76,15 @@ const preview = ref(null);
 
 const emit = defineEmits(["save", "trace"]);
 
-const onFileChange = (e) => {
+const onFileChange = async (e) => {
   const file = e.target.files[0] || null;
-  photo.value = file;
 
   if (file) {
-    preview.value = URL.createObjectURL(file);
+    const compressedFile = await compressImage(file);
+    photo.value = compressedFile;
+    preview.value = URL.createObjectURL(compressedFile);
   } else {
+    photo.value = null;
     preview.value = null;
   }
 };
