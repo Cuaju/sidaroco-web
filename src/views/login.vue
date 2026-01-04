@@ -118,6 +118,8 @@ export default {
           this.$router.push("/routes");
         } else if (auth.account.userType === "FinanceManager") {
           this.$router.push("/finance/daily");
+        } else if (auth.account.userType === "Cashier") {
+          this.$router.push("/cashier");
         } else {
           this.$router.push("/home");
         }

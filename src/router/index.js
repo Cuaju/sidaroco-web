@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from "vue-router";
 import ClientLayout from "@/layouts/clientLayout.vue";
 import RouteManagerLayout from "@/layouts/routeManagerLayout.vue";
 import FinanceManagerLayout from "@/layouts/financeManagerLayout.vue";
+import CashierLayout from "@/layouts/cashierLayout.vue";
 import { useAuthStore } from "@/stores/authStore";
 
 const routes = [
@@ -25,6 +26,31 @@ const routes = [
     path: '/purchase/:tripId',
     name: 'purchaseConfirmation',
     component: () => import('@/views/purchaseTicketSummaryView.vue')
+  },
+  // Cashier routes
+  {
+    path: "/cashier",
+    name: "cashierHome",
+    component: () => import("@/views/cashierHome.vue"),
+    meta: { requiresAuth: true, role: "Cashier" }
+  },
+  {
+    path: "/cashier/trips",
+    name: "cashierTrips",
+    component: () => import("@/views/cashierTrips.vue"),
+    meta: { requiresAuth: true, role: "Cashier" }
+  },
+  {
+    path: "/cashier/trips/:tripId/seats",
+    name: "cashierSeatSelection",
+    component: () => import("@/views/cashierSeatSelection.vue"),
+    meta: { requiresAuth: true, role: "Cashier" }
+  },
+  {
+    path: "/cashier/purchase/:tripId",
+    name: "cashierPurchase",
+    component: () => import("@/views/cashierPurchase.vue"),
+    meta: { requiresAuth: true, role: "Cashier" }
   },
   {
     path: "/",
@@ -152,6 +178,10 @@ router.beforeEach((to, from, next) => {
 
     if (auth.account?.userType === "RouteManager") {
       return next("/routes");
+    }
+
+    if (auth.account?.userType === "Cashier") {
+      return next("/cashier");
     }
 
     return next("/home");

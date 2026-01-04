@@ -22,7 +22,7 @@
       </div>
 
       <div v-else class="ticketsList">
-        <TripCard 
+        <TicketCard 
           v-for="ticket in tickets" 
           :key="ticket.id" 
           :ticket="ticket"
@@ -34,14 +34,14 @@
 
 <script>
 import ClientLayout from "../layouts/clientLayout.vue";
-import TripCard from "../components/tripCard.vue";
+import TicketCard from "../components/ticketCard.vue";
 import { useAuthStore } from "../stores/authStore";
 import { getTicketsByUser } from "@/services/ticketsApi";
-import { getTripsByIds } from "@/services/tripsApi";
+import { getTripsByIds } from "@/services/scheduleApi";
 import { getRouteById } from "@/services/routesApi";
 
 export default {
-  components: { ClientLayout, TripCard },
+  components: { ClientLayout, TicketCard },
 
   data() {
     return {

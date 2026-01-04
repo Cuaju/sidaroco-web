@@ -32,7 +32,7 @@ export async function getBusById(id) {
 export async function createBus(formData) {
   const res = await fetch(`${FLEET_API}/buses/`, {
     method: "POST",
-    body: formData, // FormData for multipart (photo upload)
+    body: formData, 
   });
 
   const data = await res.json().catch(() => ({}));
@@ -47,7 +47,7 @@ export async function createBus(formData) {
 export async function updateBus(id, formData) {
   const res = await fetch(`${FLEET_API}/buses/${id}`, {
     method: "PUT",
-    body: formData, // FormData for multipart (photo upload)
+    body: formData, 
   });
 
   const data = await res.json().catch(() => ({}));
@@ -101,7 +101,7 @@ export async function getDriverById(id) {
 export async function createDriver(formData) {
   const res = await fetch(`${FLEET_API}/drivers/`, {
     method: "POST",
-    body: formData, // FormData for multipart (photo upload)
+    body: formData, 
   });
 
   const data = await res.json().catch(() => ({}));
@@ -116,7 +116,7 @@ export async function createDriver(formData) {
 export async function updateDriver(id, formData) {
   const res = await fetch(`${FLEET_API}/drivers/${id}`, {
     method: "PUT",
-    body: formData, // FormData for multipart (photo upload)
+    body: formData, 
   });
 
   const data = await res.json().catch(() => ({}));
