@@ -90,6 +90,7 @@ import { useRoute, useRouter } from "vue-router";
 import MapPicker from "@/components/mapPicker.vue";
 import { getRouteById, updateRoute } from "@/services/routesApi";
 import { useToast } from "vue-toastification";
+import { compressImage } from "@/utils/imageCompressor";
 
 const router = useRouter();
 const route = useRoute();
@@ -162,7 +163,7 @@ watch(
 const canTrace = computed(() => !routeTraced.value);
 const canSave = computed(() => routeTraced.value);
 
-const onImageChange = (e) => {
+const onImageChange = async (e) => {
   const file = e.target.files[0];
   if (!file) return;
 
@@ -171,13 +172,9 @@ const onImageChange = (e) => {
     return;
   }
 
-  if (file.size > 2 * 1024 * 1024) {
-    toast.error("Image must be under 2MB");
-    return;
-  }
-
-  imageFile.value = file;
-  previewImage.value = URL.createObjectURL(file);
+  const compressedFile = await compressImage(file);
+  imageFile.value = compressedFile;
+  previewImage.value = URL.createObjectURL(compressedFile);
 };
 
 const traceNewRoute = async () => {

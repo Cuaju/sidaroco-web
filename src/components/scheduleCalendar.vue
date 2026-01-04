@@ -187,6 +187,7 @@ $calendar-width: 340px;
     font-weight: 900;
     color: $primaryColor;
     white-space: nowrap; 
+  }
 }
 
 .navBtn {
@@ -319,7 +320,6 @@ $calendar-width: 340px;
   
   .tripCount {
     font-size: 0.55rem;
-
   }
-}}
+}
 </style>
