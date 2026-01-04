@@ -1,6 +1,6 @@
 <template>
   <ClientLayout>
-    <section class="page">
+    <section class="tripsPage">
       <h1>My Trips</h1>
 
       <div v-if="loading" class="state">
@@ -10,35 +10,38 @@
       <div v-else-if="error" class="state error">
         <p>{{ error }}</p>
         <RouterLink to="/home" class="cta">
-          Volver a Home
+          Back to Home
         </RouterLink>
       </div>
 
-
       <div v-else-if="tickets.length === 0" class="state empty">
-        <p>You don’t have any trips yet.</p>
+        <p>You don't have any trips yet.</p>
         <RouterLink to="/home" class="cta">
           Find a trip
         </RouterLink>
       </div>
 
-      <div v-else class="tickets">
-        <ticketCard v-for="t in tickets" :key="t.id" :ticket="t" />
+      <div v-else class="ticketsList">
+        <TripCard 
+          v-for="ticket in tickets" 
+          :key="ticket.id" 
+          :ticket="ticket"
+        />
       </div>
     </section>
-
   </ClientLayout>
 </template>
 
 <script>
 import ClientLayout from "../layouts/clientLayout.vue";
-import ticketCard from "../components/ticketCard.vue";
+import TripCard from "../components/tripCard.vue";
 import { useAuthStore } from "../stores/authStore";
 import { getTicketsByUser } from "@/services/ticketsApi";
 import { getTripsByIds } from "@/services/tripsApi";
+import { getRouteById } from "@/services/routesApi";
 
 export default {
-  components: { ClientLayout, ticketCard },
+  components: { ClientLayout, TripCard },
 
   data() {
     return {
@@ -75,24 +78,63 @@ export default {
         if (typeof userId !== "string") return;
         const token = this.auth.token;
 
+        console.log('🎫 Fetching tickets for user:', userId);
         const tickets = await getTicketsByUser(userId, token);
+        console.log('🎫 Tickets received:', tickets);
 
         const tripIds = [...new Set(tickets.map(t => t.tripId))];
-
+        console.log('🚌 Trip IDs:', tripIds);
+        
         const trips = await getTripsByIds(tripIds, token);
+        console.log('🚌 Trips received:', trips);
 
         const tripsById = Object.fromEntries(
           trips.map(t => [t.id, t])
         );
 
-        this.tickets = tickets.map(t => ({
-          ...t,
-          trip: tripsById[t.tripId] ?? null
-        }));
+        // Fetch route information for each trip
+        const routeIds = [...new Set(trips.map(t => t.routeId))];
+        console.log('🗺️ Route IDs:', routeIds);
+        
+        const routes = await Promise.all(
+          routeIds.map(routeId => getRouteById(routeId))
+        );
+        console.log('🗺️ Routes received:', routes);
+        
+        const routesById = Object.fromEntries(
+          routes.map(r => [r.id, r])
+        );
+
+        // Fetch all locations (origin and destination)
+        const locationIds = [...new Set(
+          routes.flatMap(r => [r.originId, r.destinationId])
+        )];
+        console.log('📍 Location IDs:', locationIds);
+
+        // Assuming you have a getLocationById function - if not, we'll extract from route.origin/destination
+        // For now, let's work with what we have
+        
+        this.tickets = tickets.map(t => {
+          const trip = tripsById[t.tripId];
+          const route = trip ? routesById[trip.routeId] : null;
+          
+          const ticket = {
+            ...t,
+            trip,
+            route,
+            // Use route.ticketPrice if ticket.price is 0
+            price: t.price || route?.ticketPrice || 0
+          };
+          
+          console.log('🎫 Processed ticket:', ticket);
+          return ticket;
+        });
+
+        console.log('✅ Final tickets array:', this.tickets);
 
       } catch (e) {
-        console.error(e);
-        this.error = "No fue posible cargar tus viajes.";
+        console.error('❌ Error loading tickets:', e);
+        this.error = "Unable to load your trips.";
       } finally {
         this.loading = false;
       }
@@ -101,40 +143,53 @@ export default {
 };
 </script>
 
+<style scoped lang="scss">
+@use "../styles/colors.scss" as *;
 
-<style scoped>
-.page {
+.tripsPage {
   width: min(980px, 96vw);
   margin: 0 auto;
+  padding: 24px 0;
 }
 
-.tickets {
+h1 {
+  color: $primaryColor;
+  font-weight: 900;
+  margin-bottom: 20px;
+}
+
+.ticketsList {
   display: grid;
-  gap: 14px;
+  gap: 12px;
 }
 
 .state {
-  padding: 32px 0;
+  padding: 40px;
   text-align: center;
   font-weight: 700;
-  color: #555;
+  color: rgba($primaryColor, 0.6);
 }
 
 .state.empty p {
-  margin-bottom: 14px;
+  margin-bottom: 16px;
 }
 
 .state.error {
-  color: #b00020;
+  color: #e53935;
 }
 
 .cta {
   display: inline-block;
   padding: 10px 16px;
   border-radius: 12px;
-  background: #0fb9b1;
-  color: #003c39;
+  background: $thirdColor;
+  color: $primaryColor;
   font-weight: 900;
   text-decoration: none;
+  transition: all 0.2s ease;
+
+  &:hover {
+    filter: brightness(1.05);
+  }
 }
 </style>
