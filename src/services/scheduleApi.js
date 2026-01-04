@@ -40,6 +40,24 @@ export async function getScheduleSummary() {
   return data;
 }
 
+export async function getTripsByIds(tripIds) {
+  if (!Array.isArray(tripIds) || tripIds.length === 0) {
+    return [];
+  }
+
+  const trips = await Promise.all(
+    tripIds.map(async (id) => {
+      try {
+        return await getTripById(id);
+      } catch {
+        return null;
+      }
+    })
+  );
+
+  return trips.filter(Boolean);
+}
+
 export async function getScheduleForDay(date) {
   const res = await fetch(`${SCHEDULE_API}/schedule/${formatDate(date)}`);
 
