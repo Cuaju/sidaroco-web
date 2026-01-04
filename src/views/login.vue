@@ -41,63 +41,61 @@ export default {
   },
 
   mounted() {
-    mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN;
+  mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN;
 
-    const map = new mapboxgl.Map({
-      container: "map-bg",
-      style: "mapbox://styles/mapbox/standard",
-      center: [-99.1677, 19.4285], // Willis Tower (Chicago)
-      zoom: 16.6,
-      pitch: 70,
-      bearing: -20,
-      interactive: false,
-      antialias: true,
-      config: {
-        lightPreset: "dawn"
+  const map = new mapboxgl.Map({
+    container: "map-bg",
+    style: "mapbox://styles/vaomarco052/cmjz71two00j601qn72253yqc",
+    center: [-99.1677, 19.4285],
+    zoom: 17,          
+    pitch: 70,
+    bearing: -20,
+    interactive: false,
+    antialias: true
+  });
+
+  map.on("load", () => {
+    map.getStyle().layers.forEach((layer) => {
+  if (
+    layer.type === "symbol" &&
+    layer.layout?.["text-field"]
+  ) {
+    map.setLayoutProperty(layer.id, "visibility", "none");
+  }
+});
+
+    map.addLayer({
+      id: "3d-buildings",
+      source: "composite",
+      "source-layer": "building",
+      filter: ["==", "extrude", "true"],
+      type: "fill-extrusion",
+      minzoom: 15,
+      paint: {
+        "fill-extrusion-color": "#d8d2c4",
+        "fill-extrusion-height": ["get", "height"],
+        "fill-extrusion-base": ["get", "min_height"],
+        "fill-extrusion-opacity": 0.95
       }
     });
 
-    map.on("load", () => {
-      // 🔕 Ocultar etiquetas
-      map.setConfigProperty("basemap", "showRoadLabels", false);
-      map.setConfigProperty("basemap", "showPlaceLabels", false);
-      map.setConfigProperty("basemap", "showPointOfInterestLabels", false);
-      map.setConfigProperty("basemap", "showTransitLabels", false);
+    let zoom = 17;
+    let bearing = -20;
 
-      // 🏙️ Edificios 3D
-      map.addLayer({
-        id: "3d-buildings",
-        source: "composite",
-        "source-layer": "building",
-        filter: ["==", "extrude", "true"],
-        type: "fill-extrusion",
-        minzoom: 15,
-        paint: {
-          "fill-extrusion-color": "#d8d2c4",
-          "fill-extrusion-height": ["get", "height"],
-          "fill-extrusion-base": ["get", "min_height"],
-          "fill-extrusion-opacity": 0.95
-        }
-      });
+    const animate = () => {
+      if (zoom < 17.5) zoom += 0.0016;
+      bearing += 0.003;
 
-      let zoom = 15.6;
-      let bearing = -20;
+      map.setZoom(zoom);
+      map.setBearing(bearing);
 
-      const animate = () => {
-        if (zoom < 16.9) {
-          zoom += 0.0016;
-          map.setZoom(zoom);
-        }
+      requestAnimationFrame(animate);
+    };
 
-        bearing += 0.003;
-        map.setBearing(bearing);
-
-        requestAnimationFrame(animate);
-      };
-
-      animate();
-    });
-  },
+    animate();
+  });
+}
+,
 
   methods: {
     touchAll() {
