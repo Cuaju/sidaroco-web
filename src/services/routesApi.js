@@ -98,3 +98,15 @@ export async function getRouteById(id) {
   return data;
 }
 
+
+export async function getFeaturedRoutes() {
+  const res = await fetch(`${ROUTES_API}/routes/featured`);
+  const data = await res.json().catch(() => ([]));
+
+  if (!res.ok) {
+    const msg = data?.detail || data?.message || "Error loading featured routes";
+    throw new Error(msg);
+  }
+
+  return data; 
+}
