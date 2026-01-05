@@ -3,26 +3,32 @@ console.log("routesApi cargado");
 const ROUTES_API = import.meta.env.VITE_ROUTE_API_URL;
 console.log("ROUTES_API =", ROUTES_API);
 
-export async function getRoutes({ skip, take, q } = {}) {
-  console.log("getRoutes ejecutándose", { skip, take, q });
-
+export async function getRoutes({
+  skip,
+  take,
+  q,
+  name,
+  origin,
+  destination,
+  featured,
+} = {}) {
   const params = new URLSearchParams();
 
-  if (Number.isInteger(skip)) params.append("skip", String(skip));
-  if (Number.isInteger(take)) params.append("take", String(take));
-  if (typeof q === "string" && q.length > 0) params.append("q", q);
+  if (take) params.append("take", take);
+  if (skip) params.append("skip", skip);
+  if (name?.trim()) params.append("q", name.trim());
+  if (origin) params.append("origin", origin);
+  if (destination) params.append("destination", destination);
+  if (q) params.append("q", q);
+  if (typeof featured === "boolean") {
+    params.append("featured", String(featured));
+  }
 
-  const query = params.toString();
-  const url = query ? `${ROUTES_API}/routes?${query}` : `${ROUTES_API}/routes`;
-
-  const res = await fetch(url);
-  console.log("STATUS =", res.status);
-
-  const data = await res.json();
-  console.log("DATA =", data);
-
-  return data;
+  const res = await fetch(`${ROUTES_API}/routes?${params.toString()}`);
+  return await res.json();
 }
+
+
 export async function toggleFeatured(id) {
   const res = await fetch(`${ROUTES_API}/routes/${id}/toggleFeatured`, {
     method: "PATCH",
