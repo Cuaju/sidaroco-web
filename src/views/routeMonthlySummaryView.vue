@@ -47,6 +47,7 @@ import { getMonthlyReportByRoute } from "@/services/ticketsApi";
 import { getRoutes } from "@/services/routesApi";
 import { buildFinanceReportPdf } from "@/utils/reportPDFBuilder";
 import logo from "@/assets/images/logoBase64";
+import { useAuthStore } from "@/stores/authStore";
 
 export default {
   name: "routeMonthlySummaryView",
@@ -73,11 +74,13 @@ export default {
   methods: {
     async loadReport() {
       if (!this.selectedRoute) return;
+      const auth = useAuthStore();
       const [year, month] = this.selectedMonth.split("-");
       this.report = await getMonthlyReportByRoute(
         year,
         month,
-        this.selectedRoute
+        this.selectedRoute,
+        auth.token
       );
     },
     formatDateEnglish(value) {
