@@ -44,7 +44,7 @@ export async function toggleFeatured(id) {
 }
 
 export async function createRoute(formData) {
-  const res = await fetch(`${ROUTES_API}/routes`, {
+  const res = await fetch(`${ROUTES_API}/routes/`, {
     method: "POST",
     body: formData, 
   });
