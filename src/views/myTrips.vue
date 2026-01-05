@@ -21,12 +21,32 @@
         </RouterLink>
       </div>
 
-      <div v-else class="ticketsList">
-        <TicketCard 
-          v-for="ticket in tickets" 
-          :key="ticket.id" 
-          :ticket="ticket"
-        />
+      <div v-else class="tripGroups">
+        <div 
+          v-for="group in groupedTickets" 
+          :key="group.tripId" 
+          class="tripGroup"
+        >
+          <div class="tripHeader">
+            <div class="tripInfo">
+              <span class="routeName">{{ group.routeName }}</span>
+              <span class="tripDate">{{ formatDate(group.departureTime) }} at {{ formatTime(group.departureTime) }}</span>
+            </div>
+            <div class="tripMeta">
+              <span class="ticketCount">{{ group.tickets.length }} ticket{{ group.tickets.length > 1 ? 's' : '' }}</span>
+              <span class="statusBadge" :class="getTripStatus(group.departureTime).class">
+                {{ getTripStatus(group.departureTime).label }}
+              </span>
+            </div>
+          </div>
+          <div class="ticketsList">
+            <TicketCard 
+              v-for="ticket in group.tickets" 
+              :key="ticket.id" 
+              :ticket="ticket"
+            />
+          </div>
+        </div>
       </div>
     </section>
   </ClientLayout>
@@ -54,6 +74,30 @@ export default {
   computed: {
     auth() {
       return useAuthStore();
+    },
+
+    groupedTickets() {
+      const groups = {};
+      
+      for (const ticket of this.tickets) {
+        const tripId = ticket.tripId;
+        if (!groups[tripId]) {
+          groups[tripId] = {
+            tripId,
+            routeName: ticket.route?.name || 'Route not available',
+            departureTime: ticket.trip?.departureTime ? new Date(ticket.trip.departureTime) : null,
+            tickets: []
+          };
+        }
+        groups[tripId].tickets.push(ticket);
+      }
+
+      // Sort groups by departure time (most recent first)
+      return Object.values(groups).sort((a, b) => {
+        if (!a.departureTime) return 1;
+        if (!b.departureTime) return -1;
+        return b.departureTime - a.departureTime;
+      });
     }
   },
 
@@ -69,6 +113,35 @@ export default {
   },
 
   methods: {
+    formatDate(date) {
+      if (!date) return 'N/A';
+      return date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+      });
+    },
+
+    formatTime(date) {
+      if (!date) return 'N/A';
+      return date.toLocaleTimeString('en-US', {
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true
+      });
+    },
+
+    getTripStatus(departureTime) {
+      if (!departureTime) {
+        return { label: 'Unknown', class: 'unknown' };
+      }
+      const now = new Date();
+      if (departureTime < now) {
+        return { label: 'Completed', class: 'completed' };
+      }
+      return { label: 'Upcoming', class: 'upcoming' };
+    },
+
     async loadTickets() {
       this.loading = true;
       this.error = "";
@@ -193,9 +266,90 @@ h1 {
   margin-bottom: 20px;
 }
 
+.tripGroups {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.tripGroup {
+  background: white;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.tripHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  background: rgba($primaryColor, 0.05);
+  border-bottom: 1px solid rgba($primaryColor, 0.1);
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.tripInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.routeName {
+  font-weight: 800;
+  font-size: 1.1rem;
+  color: $primaryColor;
+}
+
+.tripDate {
+  font-size: 0.9rem;
+  color: rgba($primaryColor, 0.7);
+}
+
+.tripMeta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.ticketCount {
+  font-size: 0.85rem;
+  color: rgba($primaryColor, 0.6);
+  font-weight: 600;
+}
+
+.statusBadge {
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+
+  &.upcoming {
+    background: #e3f2fd;
+    color: #1976d2;
+  }
+
+  &.completed {
+    background: #e8f5e9;
+    color: #388e3c;
+  }
+
+  &.unknown {
+    background: #f5f5f5;
+    color: #757575;
+  }
+}
+
 .ticketsList {
   display: grid;
-  gap: 12px;
+  gap: 1px;
+  background: rgba($primaryColor, 0.1);
+}
+
+.ticketsList > :deep(.ticketCard) {
+  background: white;
 }
 
 .state {
