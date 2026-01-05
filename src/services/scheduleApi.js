@@ -1,3 +1,5 @@
+import { useAuthStore } from "@/stores/authStore";
+
 console.log("scheduleApi cargado");
 
 const SCHEDULE_API = import.meta.env.VITE_SCHEDULE_API_URL;
@@ -11,6 +13,13 @@ function formatDate(date) {
   return date.toISOString().split("T")[0];
 }
 
+function getAuthHeaders() {
+  const auth = useAuthStore();
+  return {
+    Authorization: `Bearer ${auth.token}`,
+  };
+}
+
 // ==================== SCHEDULES ====================
 
 export async function getScheduleRange(from, to) {
@@ -19,7 +28,9 @@ export async function getScheduleRange(from, to) {
     to: formatDate(to),
   });
 
-  const res = await fetch(`${SCHEDULE_API}/schedule/range?${params}`);
+  const res = await fetch(`${SCHEDULE_API}/schedule/range?${params}`, {
+    headers: getAuthHeaders(),
+  });
   const data = await res.json().catch(() => ({}));
 
   if (!res.ok) {
@@ -30,7 +41,9 @@ export async function getScheduleRange(from, to) {
 }
 
 export async function getScheduleSummary() {
-  const res = await fetch(`${SCHEDULE_API}/schedule/summary`);
+  const res = await fetch(`${SCHEDULE_API}/schedule/summary`, {
+    headers: getAuthHeaders(),
+  });
   const data = await res.json().catch(() => ({}));
 
   if (!res.ok) {
@@ -59,7 +72,9 @@ export async function getTripsByIds(tripIds) {
 }
 
 export async function getScheduleForDay(date) {
-  const res = await fetch(`${SCHEDULE_API}/schedule/${formatDate(date)}`);
+  const res = await fetch(`${SCHEDULE_API}/schedule/${formatDate(date)}`, {
+    headers: getAuthHeaders(),
+  });
 
   if (res.status === 404) {
     return null; // No schedule for this day
@@ -77,7 +92,7 @@ export async function getScheduleForDay(date) {
 export async function createEmptySchedule(date) {
   const res = await fetch(`${SCHEDULE_API}/schedule/`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", ...getAuthHeaders() },
     body: JSON.stringify({ date: formatDate(date) }),
   });
 
@@ -93,6 +108,7 @@ export async function createEmptySchedule(date) {
 export async function deleteSchedule(date) {
   const res = await fetch(`${SCHEDULE_API}/schedule/${formatDate(date)}`, {
     method: "DELETE",
+    headers: getAuthHeaders(),
   });
 
   const data = await res.json().catch(() => ({}));
@@ -107,7 +123,7 @@ export async function deleteSchedule(date) {
 export async function lockSchedule(date) {
   const res = await fetch(
     `${SCHEDULE_API}/schedule/${formatDate(date)}/lock`,
-    { method: "POST" }
+    { method: "POST", headers: getAuthHeaders() }
   );
 
   const data = await res.json().catch(() => ({}));
@@ -122,7 +138,7 @@ export async function lockSchedule(date) {
 export async function unlockSchedule(date) {
   const res = await fetch(
     `${SCHEDULE_API}/schedule/${formatDate(date)}/unlock`,
-    { method: "POST" }
+    { method: "POST", headers: getAuthHeaders() }
   );
 
   const data = await res.json().catch(() => ({}));
@@ -139,7 +155,7 @@ export async function duplicateSchedule(sourceDate, targetDate) {
     `${SCHEDULE_API}/schedule/${formatDate(sourceDate)}/duplicate`,
     {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", ...getAuthHeaders() },
       body: JSON.stringify({ targetDate: formatDate(targetDate) }),
     }
   );
@@ -160,7 +176,7 @@ export async function addTrip(date, tripData) {
     `${SCHEDULE_API}/schedule/${formatDate(date)}/trip`,
     {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", ...getAuthHeaders() },
       body: JSON.stringify({
         date: formatDate(date),
         routeId: tripData.routeId,
@@ -185,7 +201,7 @@ export async function updateTrip(date, tripId, tripData) {
     `${SCHEDULE_API}/schedule/${formatDate(date)}/trip/${tripId}`,
     {
       method: "PUT",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", ...getAuthHeaders() },
       body: JSON.stringify(tripData),
     }
   );
@@ -202,7 +218,7 @@ export async function updateTrip(date, tripId, tripData) {
 export async function deleteTrip(date, tripId) {
   const res = await fetch(
     `${SCHEDULE_API}/schedule/${formatDate(date)}/trip/${tripId}`,
-    { method: "DELETE" }
+    { method: "DELETE", headers: getAuthHeaders() }
   );
 
   const data = await res.json().catch(() => ({}));
@@ -217,7 +233,7 @@ export async function deleteTrip(date, tripId) {
 export async function cancelTrip(date, tripId) {
   const res = await fetch(
     `${SCHEDULE_API}/schedule/${formatDate(date)}/trip/${tripId}/cancel`,
-    { method: "POST" }
+    { method: "POST", headers: getAuthHeaders() }
   );
 
   const data = await res.json().catch(() => ({}));
@@ -232,7 +248,7 @@ export async function cancelTrip(date, tripId) {
 export async function completeTrip(date, tripId) {
   const res = await fetch(
     `${SCHEDULE_API}/schedule/${formatDate(date)}/trip/${tripId}/complete`,
-    { method: "POST" }
+    { method: "POST", headers: getAuthHeaders() }
   );
 
   const data = await res.json().catch(() => ({}));
@@ -245,7 +261,9 @@ export async function completeTrip(date, tripId) {
 }
 
 export async function getTripById(tripId) {
-  const res = await fetch(`${SCHEDULE_API}/schedule/trip/${tripId}`);
+  const res = await fetch(`${SCHEDULE_API}/schedule/trip/${tripId}`, {
+    headers: getAuthHeaders(),
+  });
   const data = await res.json().catch(() => ({}));
 
   if (!res.ok) {
@@ -256,7 +274,9 @@ export async function getTripById(tripId) {
 }
 
 export async function getScheduleById(scheduleId) {
-  const res = await fetch(`${SCHEDULE_API}/schedule/byId/${scheduleId}`);
+  const res = await fetch(`${SCHEDULE_API}/schedule/byId/${scheduleId}`, {
+    headers: getAuthHeaders(),
+  });
   const data = await res.json().catch(() => ({}));
 
   if (!res.ok) {
