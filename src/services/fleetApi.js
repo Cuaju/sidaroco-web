@@ -1,14 +1,25 @@
+import { useAuthStore } from "@/stores/authStore";
+
 console.log("fleetApi cargado");
 
 const FLEET_API = import.meta.env.VITE_FLEET_API_URL;
 console.log("FLEET_API =", FLEET_API);
+
+function getAuthHeaders() {
+  const auth = useAuthStore();
+  return {
+    Authorization: `Bearer ${auth.token}`,
+  };
+}
 
 // ==================== BUSES ====================
 
 export async function getAllBuses() {
   console.log("getAllBuses ejecutándose");
 
-  const res = await fetch(`${FLEET_API}/buses/`);
+  const res = await fetch(`${FLEET_API}/buses/`, {
+    headers: getAuthHeaders(),
+  });
   console.log("STATUS =", res.status);
 
   const data = await res.json();
@@ -18,7 +29,9 @@ export async function getAllBuses() {
 }
 
 export async function getBusById(id) {
-  const res = await fetch(`${FLEET_API}/buses/${id}`);
+  const res = await fetch(`${FLEET_API}/buses/${id}`, {
+    headers: getAuthHeaders(),
+  });
 
   const data = await res.json().catch(() => ({}));
 
@@ -32,6 +45,7 @@ export async function getBusById(id) {
 export async function createBus(formData) {
   const res = await fetch(`${FLEET_API}/buses/`, {
     method: "POST",
+    headers: getAuthHeaders(),
     body: formData, 
   });
 
@@ -47,6 +61,7 @@ export async function createBus(formData) {
 export async function updateBus(id, formData) {
   const res = await fetch(`${FLEET_API}/buses/${id}`, {
     method: "PUT",
+    headers: getAuthHeaders(),
     body: formData, 
   });
 
@@ -62,6 +77,7 @@ export async function updateBus(id, formData) {
 export async function deleteBus(id) {
   const res = await fetch(`${FLEET_API}/buses/${id}`, {
     method: "DELETE",
+    headers: getAuthHeaders(),
   });
 
   if (!res.ok) {
@@ -77,7 +93,9 @@ export async function deleteBus(id) {
 export async function getAllDrivers() {
   console.log("getAllDrivers ejecutándose");
 
-  const res = await fetch(`${FLEET_API}/drivers`);
+  const res = await fetch(`${FLEET_API}/drivers`, {
+    headers: getAuthHeaders(),
+  });
   console.log("STATUS =", res.status);
 
   const data = await res.json();
@@ -87,7 +105,9 @@ export async function getAllDrivers() {
 }
 
 export async function getDriverById(id) {
-  const res = await fetch(`${FLEET_API}/drivers/${id}`);
+  const res = await fetch(`${FLEET_API}/drivers/${id}`, {
+    headers: getAuthHeaders(),
+  });
 
   const data = await res.json().catch(() => ({}));
 
@@ -101,6 +121,7 @@ export async function getDriverById(id) {
 export async function createDriver(formData) {
   const res = await fetch(`${FLEET_API}/drivers/`, {
     method: "POST",
+    headers: getAuthHeaders(),
     body: formData, 
   });
 
@@ -116,6 +137,7 @@ export async function createDriver(formData) {
 export async function updateDriver(id, formData) {
   const res = await fetch(`${FLEET_API}/drivers/${id}`, {
     method: "PUT",
+    headers: getAuthHeaders(),
     body: formData, 
   });
 
@@ -131,6 +153,7 @@ export async function updateDriver(id, formData) {
 export async function deleteDriver(id) {
   const res = await fetch(`${FLEET_API}/drivers/${id}`, {
     method: "DELETE",
+    headers: getAuthHeaders(),
   });
 
   if (!res.ok) {

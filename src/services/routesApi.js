@@ -1,7 +1,16 @@
+import { useAuthStore } from "@/stores/authStore";
+
 console.log("routesApi cargado");
 
 const ROUTES_API = import.meta.env.VITE_ROUTE_API_URL;
 console.log("ROUTES_API =", ROUTES_API);
+
+function getAuthHeaders() {
+  const auth = useAuthStore();
+  return {
+    Authorization: `Bearer ${auth.token}`,
+  };
+}
 
 export async function getRoutes({
   skip,
@@ -24,7 +33,9 @@ export async function getRoutes({
     params.append("featured", String(featured));
   }
 
-  const res = await fetch(`${ROUTES_API}/routes?${params.toString()}`);
+  const res = await fetch(`${ROUTES_API}/routes?${params.toString()}`, {
+    headers: getAuthHeaders(),
+  });
   return await res.json();
 }
 
@@ -32,6 +43,7 @@ export async function getRoutes({
 export async function toggleFeatured(id) {
   const res = await fetch(`${ROUTES_API}/routes/${id}/toggleFeatured`, {
     method: "PATCH",
+    headers: getAuthHeaders(),
   });
 
   const data = await res.json().catch(() => ({}));
@@ -46,6 +58,7 @@ export async function toggleFeatured(id) {
 export async function createRoute(formData) {
   const res = await fetch(`${ROUTES_API}/routes/`, {
     method: "POST",
+    headers: getAuthHeaders(),
     body: formData, 
   });
 
@@ -62,6 +75,7 @@ export async function createRoute(formData) {
 export async function deleteRoute(id) {
   const res = await fetch(`${ROUTES_API}/routes/${id}`, {
     method: "DELETE",
+    headers: getAuthHeaders(),
   });
 
   if (!res.ok) {
@@ -75,6 +89,7 @@ export async function deleteRoute(id) {
 export async function updateRoute(id, formData) {
   const res = await fetch(`${ROUTES_API}/routes/${id}`, {
     method: "PUT",
+    headers: getAuthHeaders(),
     body: formData,
   });
 
@@ -93,7 +108,9 @@ export async function updateRoute(id, formData) {
 
 
 export async function getRouteById(id) {
-  const res = await fetch(`${ROUTES_API}/routes/${id}`);
+  const res = await fetch(`${ROUTES_API}/routes/${id}`, {
+    headers: getAuthHeaders(),
+  });
 
   const data = await res.json().catch(() => ({}));
 
@@ -106,7 +123,9 @@ export async function getRouteById(id) {
 
 
 export async function getFeaturedRoutes() {
-  const res = await fetch(`${ROUTES_API}/routes/featured`);
+  const res = await fetch(`${ROUTES_API}/routes/featured`, {
+    headers: getAuthHeaders(),
+  });
   const data = await res.json().catch(() => ([]));
 
   if (!res.ok) {
