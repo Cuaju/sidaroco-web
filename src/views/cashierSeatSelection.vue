@@ -56,11 +56,7 @@
               <BusSeatGrid v-if="seats.length" :seats="seats" :selected="selectedSeats" @select="selectSeat" />
               <div class="actionsSection">
                 <button class="backBtn" @click="goBack">← Back</button>
-                <button 
-                  class="confirmBtn" 
-                  @click="confirmPurchase" 
-                  :disabled="selectedSeats.length === 0"
-                >
+                <button class="confirmBtn" @click="confirmPurchase" :disabled="selectedSeats.length === 0">
                   Continue to Payment
                 </button>
               </div>

@@ -24,7 +24,7 @@
 
             <label class="field">
               <span>Date</span>
-              <input type="date" v-model="selectedDate" />
+              <input type="date" v-model="selectedDate" :min="today" />
             </label>
           </div>
 
@@ -36,53 +36,43 @@
       </div>
     </section>
     <section class="reco">
-  <div class="recoHead">
-    <h2>Recommended Places</h2>
-    <p>Places maybe you will be interested</p>
-  </div>
-
-  <div v-if="featuredLoading" class="cardLite">Loading featured...</div>
-  <div v-else-if="featuredError" class="errorLite">{{ featuredError }}</div>
-
-  <div v-else class="carouselWrap">
-    <button class="navBtn left" @click="scrollFeatured(-1)" aria-label="Scroll left">
-      ‹
-    </button>
-
-    <div ref="featuredTrack" class="carousel">
-      <article
-        v-for="r in featuredRoutes"
-        :key="r.id"
-        class="placeCard carouselItem"
-        role="button"
-        tabindex="0"
-        @click="goRoute(r)"
-        @keydown.enter="goRoute(r)"
-      >
-        <div
-          class="thumb"
-          :style="{ backgroundImage: `url(${routePhotoUrl(r) || destinationImage})` }"
-        ></div>
-
-        <div class="meta">
-          <h3>{{ prettyRouteTitle(r) }}</h3>
-          <p>
-            {{ r.origin?.name }} → {{ r.destination?.name }}
-            · ${{ Number(r.ticketPrice).toFixed(0) }}
-          </p>
-        </div>
-      </article>
-
-      <div v-if="featuredRoutes.length === 0" class="emptyLite">
-        No featured trips right now.
+      <div class="recoHead">
+        <h2>Recommended Places</h2>
+        <p>Places maybe you will be interested</p>
       </div>
-    </div>
 
-    <button class="navBtn right" @click="scrollFeatured(1)" aria-label="Scroll right">
-      ›
-    </button>
-  </div>
-</section>
+      <div v-if="featuredLoading" class="cardLite">Loading featured...</div>
+      <div v-else-if="featuredError" class="errorLite">{{ featuredError }}</div>
+
+      <div v-else class="carouselWrap">
+        <button class="navBtn left" @click="scrollFeatured(-1)" aria-label="Scroll left">
+          ‹
+        </button>
+
+        <div ref="featuredTrack" class="carousel">
+          <article v-for="r in featuredRoutes" :key="r.id" class="placeCard carouselItem" role="button" tabindex="0"
+            @click="goRoute(r)" @keydown.enter="goRoute(r)">
+            <div class="thumb" :style="{ backgroundImage: `url(${routePhotoUrl(r) || destinationImage})` }"></div>
+
+            <div class="meta">
+              <h3>{{ prettyRouteTitle(r) }}</h3>
+              <p>
+                {{ r.origin?.name }} → {{ r.destination?.name }}
+                · ${{ Number(r.ticketPrice).toFixed(0) }}
+              </p>
+            </div>
+          </article>
+
+          <div v-if="featuredRoutes.length === 0" class="emptyLite">
+            No featured trips right now.
+          </div>
+        </div>
+
+        <button class="navBtn right" @click="scrollFeatured(1)" aria-label="Scroll right">
+          ›
+        </button>
+      </div>
+    </section>
 
   </ClientLayout>
 </template>
@@ -96,6 +86,8 @@ export default {
   components: { ClientLayout },
 
   data() {
+    const today = new Date();
+    const yyyyMmDd = today.toISOString().split("T")[0];
     return {
       routes: [],
       origins: [],
@@ -104,6 +96,7 @@ export default {
       selectedDestinationId: "",
       selectedDate: "",
       selectedOriginName: "",
+      today: yyyyMmDd,
 
       featuredRoutes: [],
       featuredLoading: true,
@@ -143,14 +136,14 @@ export default {
         originIds: Array.from(o.originIds)
       }))
       .sort((a, b) => a.name.localeCompare(b.name, "es", { sensitivity: "base" }));
-      
+
     try {
       this.featuredLoading = true;
       this.featuredError = "";
       this.featuredRoutes = await getFeaturedRoutes();
     } catch (e) {
       this.featuredError = e?.message || "could not load featured routes";
-    } 
+    }
     finally {
       this.featuredLoading = false;
     }
@@ -159,6 +152,7 @@ export default {
   watch: {
     selectedOriginName(originName) {
       this.selectedDestinationId = "";
+      this.selectedDate = "";
 
       const origin = this.origins.find(o => o.name === originName);
       if (!origin) {
@@ -181,7 +175,14 @@ export default {
       this.destinations = Array.from(destinationMap.entries())
         .map(([id, name]) => ({ id, name }))
         .sort((a, b) => a.name.localeCompare(b.name, "es", { sensitivity: "base" }));
-    }
+    },
+    selectedDestinationId(newVal) {
+      if (!newVal) return;
+
+      if (!this.selectedDate || this.selectedDate < this.today) {
+        this.selectedDate = this.today;
+      }
+    },
   },
 
   setup() {
@@ -226,43 +227,43 @@ export default {
     },
 
     scrollFeatured(dir) {
-    const el = this.$refs.featuredTrack;
-    if (!el) return;
+      const el = this.$refs.featuredTrack;
+      if (!el) return;
 
-    const cardWidth = 320; 
-    el.scrollBy({ left: dir * cardWidth, behavior: "smooth" });
-  },
+      const cardWidth = 320;
+      el.scrollBy({ left: dir * cardWidth, behavior: "smooth" });
+    },
 
-  prettyRouteTitle(r) {
-    if (r?.name) return r.name;
-    return `${r?.origin?.name || "Origin"} - ${r?.destination?.name || "Destination"}`;
-  },
+    prettyRouteTitle(r) {
+      if (r?.name) return r.name;
+      return `${r?.origin?.name || "Origin"} - ${r?.destination?.name || "Destination"}`;
+    },
 
-  routePhotoUrl(r) {
-    if (!r) return "";
+    routePhotoUrl(r) {
+      if (!r) return "";
 
-    if (r.photoUrl && typeof r.photoUrl === "string") {
-    if (r.photoUrl.startsWith("http")) return r.photoUrl;
+      if (r.photoUrl && typeof r.photoUrl === "string") {
+        if (r.photoUrl.startsWith("http")) return r.photoUrl;
+      }
+      if (r.photoKey && typeof r.photoKey === "string") {
+        const base = import.meta.env.VITE_ASSETS_BASE_URL; // optional
+        if (base) {
+          const b = base.replace(/\/$/, "");
+          const k = r.photoKey.replace(/^\//, "");
+          return `${b}/${k}`;
+        }
+      }
+
+      return "";
+    },
+
+    goRoute(r) {
+
+      this.$router.push({
+        name: "tripsList",
+        query: { routeId: r.id }
+      });
     }
-    if (r.photoKey && typeof r.photoKey === "string") {
-      const base = import.meta.env.VITE_ASSETS_BASE_URL; // optional
-    if (base) {
-      const b = base.replace(/\/$/, "");
-      const k = r.photoKey.replace(/^\//, "");
-      return `${b}/${k}`;
-    }
-  }
-
-  return "";
-},
-
-  goRoute(r) {
-
-    this.$router.push({
-      name: "tripsList",
-      query: { routeId: r.id }
-    });
-  }
   }
 
 };
@@ -507,6 +508,7 @@ select:disabled {
 
   scrollbar-width: none;
 }
+
 .carousel::-webkit-scrollbar {
   display: none;
 }
@@ -533,15 +535,21 @@ select:disabled {
   cursor: pointer;
   display: grid;
   place-items: center;
-  box-shadow: 0 10px 30px rgba(0,0,0,.12);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, .12);
   z-index: 5;
 }
 
-.navBtn.left { left: -10px; }
-.navBtn.right { right: -10px; }
-
-@media (max-width: 820px) {
-  .navBtn { display: none; }
+.navBtn.left {
+  left: -10px;
 }
 
+.navBtn.right {
+  right: -10px;
+}
+
+@media (max-width: 820px) {
+  .navBtn {
+    display: none;
+  }
+}
 </style>

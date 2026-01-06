@@ -123,3 +123,26 @@ tbody tr:last-child td {
   font-weight: bold;
   color: #9ca3af;
 }
+
+.filters {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.filters select {
+  min-width: 260px;
+}
+
+.card strong {
+  font-size: 1.05rem;
+}
+
+.routeCell {
+  font-weight: 800;
+}
+
+.numberCell {
+  font-variant-numeric: tabular-nums;
+}

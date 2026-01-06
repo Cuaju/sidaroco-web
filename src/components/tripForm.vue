@@ -10,15 +10,17 @@
             type="time"
             v-model="form.departureTime"
             required
+            @change="validateTime"
           />
+          <small v-if="timeError" class="hint">{{ timeError }}</small>
         </div>
 
         <div class="formGroup">
           <label>Route</label>
           <select v-model="form.routeId" required>
             <option value="" disabled>Select a route</option>
-            <option v-for="route in routes" :key="route.id" :value="route.id">
-              {{ route.id }} - {{ route.origin.name }} → {{ route.destination.name }}
+            <option v-for="route in sortedRoutes" :key="route.id" :value="route.id">
+             {{ route.id }} - {{ route.origin.name }} → {{ route.destination.name }}
             </option>
           </select>
         </div>
@@ -32,7 +34,7 @@
             </option>
           </select>
           <small v-if="form.routeId && filteredBuses.length === 0" class="hint">
-            There are no buses assigned to this route
+            No buses assigned to this route
           </small>
         </div>
 
@@ -50,7 +52,7 @@
           <button type="button" class="cancelBtn" @click="$emit('close')">
             Cancel
           </button>
-          <button type="submit" class="submitBtn" :disabled="submitting">
+          <button type="submit" class="submitBtn" :disabled="submitting || !!timeError">
             {{ submitting ? "Saving..." : isEdit ? "Save changes" : "Add trip" }}
           </button>
         </div>
@@ -66,6 +68,7 @@ import { getAllBuses, getAllDrivers } from "@/services/fleetApi";
 
 const props = defineProps({
   trip: { type: Object, default: null }, // null = create, object = edit
+  selectedDate: { type: String, default: null },
 });
 
 const emit = defineEmits(["close", "submit"]);
@@ -83,8 +86,42 @@ const routes = ref([]);
 const buses = ref([]);
 const drivers = ref([]);
 const submitting = ref(false);
+const timeError = ref("");
 
-// Filter buses by selected route (routeId match or null routeId)
+const sortedRoutes = computed(() => {
+  return [...routes.value].sort((a, b) => {
+    const originA = a.origin?.name || "";
+    const originB = b.origin?.name || "";
+    return originA.localeCompare(originB, "es-MX");
+  });
+});
+
+const isToday = computed(() => {
+  if (!props.selectedDate) return false;
+  const now = new Date();
+  const todayMX = new Date(now.toLocaleString("en-US", { timeZone: "America/Mexico_City" }));
+  const todayStr = `${todayMX.getFullYear()}-${String(todayMX.getMonth() + 1).padStart(2, "0")}-${String(todayMX.getDate()).padStart(2, "0")}`;
+  return props.selectedDate === todayStr;
+});
+
+const getCurrentMexicoTime = () => {
+  const now = new Date();
+  const mxTime = new Date(now.toLocaleString("en-US", { timeZone: "America/Mexico_City" }));
+  return `${String(mxTime.getHours()).padStart(2, "0")}:${String(mxTime.getMinutes()).padStart(2, "0")}`;
+};
+
+const validateTime = () => {
+  timeError.value = "";
+  if (isToday.value && form.value.departureTime) {
+    const currentTime = getCurrentMexicoTime();
+    if (form.value.departureTime < currentTime) {
+      timeError.value = "Cannot schedule a trip in the past";
+      return false;
+    }
+  }
+  return true;
+};
+
 const filteredBuses = computed(() => {
   if (!form.value.routeId) return buses.value.filter((b) => b.status === "Activo");
   
@@ -95,12 +132,10 @@ const filteredBuses = computed(() => {
   );
 });
 
-// Only active drivers
 const activeDrivers = computed(() => {
   return drivers.value.filter((d) => d.status === "Activo");
 });
 
-// Reset busId when route changes if current bus is not valid
 watch(
   () => form.value.routeId,
   () => {
@@ -123,18 +158,16 @@ onMounted(async () => {
     buses.value = busesData;
     drivers.value = driversData;
 
-    // If editing, populate form
     if (props.trip) {
       const t = props.trip;
       form.value.routeId = t.routeId;
       form.value.busId = t.busId;
       form.value.driverId = t.driverId;
 
-      // Extract time from departureTime
       if (t.departureTime) {
         const d = new Date(t.departureTime);
-        const hh = String(d.getHours()).padStart(2, "0");
-        const mm = String(d.getMinutes()).padStart(2, "0");
+        const hh = String(d.getUTCHours()).padStart(2, "0");
+        const mm = String(d.getUTCMinutes()).padStart(2, "0");
         form.value.departureTime = `${hh}:${mm}`;
       }
     }
@@ -144,6 +177,8 @@ onMounted(async () => {
 });
 
 async function handleSubmit() {
+  if (!validateTime()) return;
+  
   submitting.value = true;
 
   try {
@@ -206,7 +241,6 @@ async function handleSubmit() {
   input,
   select {
     width: 100%;
-    // ESTA LÍNEA ES LA SOLUCIÓN:
     box-sizing: border-box; 
     height: 46px;
     padding: 0 14px;
@@ -219,7 +253,6 @@ async function handleSubmit() {
     outline: none;
     transition: all 0.2s ease;
     
-    // Aseguramos que la tipografía sea consistente
     font-family: inherit; 
 
     &:focus {
@@ -230,10 +263,7 @@ async function handleSubmit() {
 
   select {
     cursor: pointer;
-    // Opcional: para que se vea idéntico en altura en todos los navegadores
     appearance: none; 
-    // Si usas appearance: none, necesitarás volver a poner la flechita con background-image, 
-    // si no quieres complicarte, solo con el box-sizing basta.
   }
 
   .hint {
