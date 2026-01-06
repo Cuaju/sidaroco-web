@@ -120,15 +120,26 @@ const goBack = () => router.back();
 
 const geocode = async (place) => {
   const token = import.meta.env.VITE_MAPBOX_TOKEN;
+
   const res = await fetch(
     `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
       place
     )}.json?access_token=${token}`
   );
+
   const data = await res.json();
-  if (!data.features.length) return null;
-  const [lng, lat] = data.features[0].center;
-  return { name: place, lat, lng };
+  if (!data.features?.length) return null;
+
+  const feature = data.features[0];
+  const [lng, lat] = feature.center;
+
+  return {
+    mapboxId: feature.id,         
+    name: feature.text,            
+    fullName: feature.place_name,  
+    lat,
+    lng,
+  };
 };
 
 onMounted(async () => {
@@ -192,25 +203,39 @@ const traceNewRoute = async () => {
 };
 
 const save = async () => {
-  const fd = new FormData();
+  try {
+    const fd = new FormData();
 
-  fd.append("name", form.value.name);
-  fd.append("ticketPrice", String(form.value.ticketPrice));
-  fd.append("origin", JSON.stringify(origin.value));
-  fd.append("destination", JSON.stringify(destination.value));
+    fd.append("name", form.value.name);
+    fd.append("ticketPrice", String(form.value.ticketPrice));
+    fd.append("origin", JSON.stringify(origin.value));
+    fd.append("destination", JSON.stringify(destination.value));
 
-  if (imageFile.value) {
-  fd.append("photo", imageFile.value);
-}
+    if (imageFile.value) {
+      fd.append("photo", imageFile.value);
+    }
 
+    await updateRoute(route.params.id, fd);
 
-  await updateRoute(route.params.id, fd);
+    toast.success("Route updated");
+    router.push("/routes");
 
-  toast.success("Route updated");
-  router.push("/routes");
+  } catch (e) {
+    console.error("UPDATE ERROR:", e);
+
+    if (e.message === "ROUTE_NAME_EXISTS") {
+      toast.error("A route with this name already exists");
+      return;
+    }
+
+    if (e.message === "ROUTE_ORIGIN_DESTINATION_EXISTS") {
+      toast.error("This origin and destination already exist");
+      return;
+    }
+
+    toast.error("Error updating route");
+  }
 };
-
-
 </script>
 
 <style scoped lang="scss">

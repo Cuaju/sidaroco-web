@@ -61,7 +61,7 @@
 <script setup>
 import { ref } from "vue";
 import { compressImage } from "@/utils/imageCompressor";
-
+import { useToast } from "vue-toastification";
 defineProps({
   isTraced: Boolean,
 });
@@ -73,21 +73,34 @@ const ticketPrice = ref(0);
 const featured = ref(false);
 const photo = ref(null);
 const preview = ref(null);
-
+const toast = useToast();
 const emit = defineEmits(["save", "trace"]);
 
 const onFileChange = async (e) => {
   const file = e.target.files[0] || null;
 
-  if (file) {
-    const compressedFile = await compressImage(file);
-    photo.value = compressedFile;
-    preview.value = URL.createObjectURL(compressedFile);
-  } else {
+  if (!file) {
     photo.value = null;
     preview.value = null;
+    return;
   }
+  if (!file.type.startsWith("image/")) {
+    toast.error("Only image files are allowed");
+    e.target.value = "";
+    return;
+  }
+  const MAX_SIZE = 5 * 1024 * 1024; 
+  if (file.size > MAX_SIZE) {
+    toast.warning("Only image files are allowed");
+    e.target.value = "";
+    return;
+  }
+  const compressedFile = await compressImage(file);
+
+  photo.value = compressedFile;
+  preview.value = URL.createObjectURL(compressedFile);
 };
+
 
 const emitSave = () => {
   emit("save", {
