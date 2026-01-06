@@ -5,15 +5,17 @@
 
         <transition name="ultraDrop">
             <div v-if="open" class="dropdown" @click.stop>
+                <button class="logoutBtn" @click="profile">Profile</button>
                 <button class="logoutBtn" @click="logout">Logout</button>
             </div>
         </transition>
-
     </div>
 </template>
 
 
 <script>
+import { Transition } from 'vue';
+
 export default {
     name: "userMenu",
     props: {
@@ -31,6 +33,9 @@ export default {
             localStorage.removeItem("token");
             this.$router.push("/");
         },
+        profile(){
+            this.$router.push("/profile")
+        }
     },
 };
 </script>
