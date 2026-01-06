@@ -14,24 +14,26 @@
         <div class="calendarActions" v-if="selectedDate">
           <button
             class="actionBtn create"
-            v-if="!schedule"
+            v-if="!schedule && !isPastDay"
             @click="createScheduleForDay"
             :disabled="loadingSchedule"
           >
           Create Schedule
           </button>
 
-          <template v-else>
-            <button
-              class="actionBtn lock"
-              v-if="!schedule.isLocked"
-              @click="toggleLock"
-            >
-            Block Day
-            </button>
-            <button class="actionBtn unlock" v-else @click="toggleLock">
-              Unblock Day
-            </button>
+          <template v-else-if="schedule">
+            <template v-if="!isPastDay">
+              <button
+                class="actionBtn lock"
+                v-if="!schedule.isLocked"
+                @click="toggleLock"
+              >
+              Lock Day
+              </button>
+              <button class="actionBtn unlock" v-else @click="toggleLock">
+                Unlock Day
+              </button>
+            </template>
 
             <button class="actionBtn duplicate" @click="showDuplicateModal = true">
               Duplicate to Another Day
@@ -39,16 +41,16 @@
 
             <button
               class="actionBtn delete"
-              v-if="!schedule.isLocked"
+              v-if="!schedule.isLocked && !isPastDay"
               @click="confirmDeleteSchedule"
             >
             Delete Schedule
             </button>
           </template>
+          <p v-if="isPastDay && !schedule" class="pastDayNote">Cannot create schedule for past days</p>
         </div>
       </div>
 
-      <!-- Day detail -->
       <div class="daySide">
         <div v-if="!selectedDate" class="placeholder">
           <p>Select a date on the calendar</p>
@@ -60,18 +62,20 @@
 
         <div v-else-if="!schedule" class="placeholder">
           <p>No schedule for {{ formattedDate }}</p>
-          <p class="hint">Create a schedule to start adding trips</p>
+          <p class="hint" v-if="!isPastDay">Create a schedule to start adding trips</p>
+          <p class="hint" v-else>Cannot create schedules for past days</p>
         </div>
 
         <div v-else class="dayDetail">
           <div class="dayHeader">
             <div class="dayTitle">
               <h3>{{ formattedDate }}</h3>
-              <span class="lockBadge" v-if="schedule.isLocked">Blocked</span>
+              <span class="lockBadge" v-if="schedule.isLocked">Locked</span>
+              <span class="lockBadge past" v-else-if="isPastDay">Past day</span>
             </div>
             <button
               class="addTripBtn"
-              v-if="!schedule.isLocked"
+              v-if="!schedule.isLocked && !isPastDay"
               @click="openTripForm(null)"
             >
               + Add trip
@@ -87,7 +91,7 @@
               v-for="trip in sortedTrips"
               :key="trip.id"
               :trip="trip"
-              :isLocked="schedule.isLocked"
+              :isLocked="schedule.isLocked || isPastDay"
               @edit="openTripForm"
               @delete="handleDeleteTrip"
               @cancel="handleCancelTrip"
@@ -98,23 +102,22 @@
       </div>
     </div>
 
-    <!-- Trip Form Modal -->
     <TripForm
       v-if="showTripForm"
       :trip="editingTrip"
+      :selectedDate="selectedDate"
       @close="closeTripForm"
       @submit="handleTripSubmit"
     />
 
-    <!-- Duplicate Modal -->
     <div class="modalOverlay" v-if="showDuplicateModal" @click.self="showDuplicateModal = false">
       <div class="duplicateModal">
         <h3>Duplicate Schedule</h3>
-        <p>Copy trips from<strong>{{ formattedDate }}</strong> a:</p>
-        <input type="date" v-model="duplicateTargetDate" />
+        <p>Copy trips from <strong>{{ formattedDate }}</strong> to:</p>
+        <input type="date" v-model="duplicateTargetDate" :min="todayDateStr" />
         <div class="modalActions">
           <button class="cancelBtn" @click="showDuplicateModal = false">Cancel</button>
-          <button class="submitBtn" @click="handleDuplicate" :disabled="!duplicateTargetDate">
+          <button class="submitBtn" @click="handleDuplicate" :disabled="!duplicateTargetDate || duplicateTargetDate < todayDateStr">
             Duplicate
           </button>
         </div>
@@ -152,23 +155,35 @@ const loadingSchedule = ref(false);
 
 const calendarRef = ref(null);
 
-// Trip form state
 const showTripForm = ref(false);
 const editingTrip = ref(null);
 
-// Duplicate modal state
 const showDuplicateModal = ref(false);
 const duplicateTargetDate = ref("");
 
 const formattedDate = computed(() => {
   if (!selectedDate.value) return "";
   const d = new Date(selectedDate.value + "T12:00:00");
-  return d.toLocaleDateString("es-MX", {
+  return d.toLocaleDateString("en-US", {
     weekday: "long",
     year: "numeric",
     month: "long",
     day: "numeric",
   });
+});
+
+const isPastDay = computed(() => {
+  if (!selectedDate.value) return false;
+  const now = new Date();
+  const todayMX = new Date(now.toLocaleString("en-US", { timeZone: "America/Mexico_City" }));
+  const todayStr = `${todayMX.getFullYear()}-${String(todayMX.getMonth() + 1).padStart(2, "0")}-${String(todayMX.getDate()).padStart(2, "0")}`;
+  return selectedDate.value < todayStr;
+});
+
+const todayDateStr = computed(() => {
+  const now = new Date();
+  const todayMX = new Date(now.toLocaleString("en-US", { timeZone: "America/Mexico_City" }));
+  return `${todayMX.getFullYear()}-${String(todayMX.getMonth() + 1).padStart(2, "0")}-${String(todayMX.getDate()).padStart(2, "0")}`;
 });
 
 const sortedTrips = computed(() => {
@@ -219,7 +234,7 @@ async function confirmDeleteSchedule() {
     confirmButtonColor: "#d33",
     cancelButtonColor: "#3085d6",
     confirmButtonText: "Yes, delete",
-    cancelButtonText: "Cancelar",
+    cancelButtonText: "Cancel",
   });
 
   if (result.isConfirmed) {
@@ -262,7 +277,6 @@ async function handleDuplicate() {
   }
 }
 
-// Trip CRUD
 function openTripForm(trip) {
   editingTrip.value = trip;
   showTripForm.value = true;
@@ -481,7 +495,20 @@ h2 {
     color: #856404;
     font-size: 0.75rem;
     font-weight: 700;
+    
+    &.past {
+      background: rgba(108, 117, 125, 0.2);
+      color: #6c757d;
+    }
   }
+}
+
+.pastDayNote {
+  font-size: 0.85rem;
+  color: #6c757d;
+  font-weight: 600;
+  text-align: center;
+  margin: 8px 0 0;
 }
 
 .addTripBtn {

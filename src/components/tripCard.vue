@@ -7,15 +7,15 @@
 
       <div class="tripInfo">
         <div class="tripRoute">
-          <span class="label">Ruta</span>
+          <span class="label">Route</span>
           <span class="value">{{ trip.routeId }}</span>
         </div>
         <div class="tripBus">
-          <span class="label">Camión</span>
+          <span class="label">Bus</span>
           <span class="value">{{ trip.busId }}</span>
         </div>
         <div class="tripDriver">
-          <span class="label">Conductor</span>
+          <span class="label">Driver</span>
           <span class="value">{{ trip.driverId }}</span>
         </div>
       </div>
@@ -29,25 +29,25 @@
 
     <div class="tripActions" v-if="!isLocked">
       <template v-if="trip.status === 'scheduled'">
-        <button class="actionBtn complete" @click="$emit('complete', trip.id)" title="Completar">
+        <button class="actionBtn complete" @click="$emit('complete', trip.id)" title="Complete">
           ✓
         </button>
-        <button class="actionBtn cancel" @click="$emit('cancel', trip.id)" title="Cancelar">
+        <button class="actionBtn cancel" @click="$emit('cancel', trip.id)" title="Cancel">
           ✕
         </button>
-        <button class="actionBtn edit" @click="$emit('edit', trip)" title="Editar">
+        <button class="actionBtn edit" @click="$emit('edit', trip)" title="Edit">
           ✎
         </button>
-        <button class="actionBtn delete" @click="confirmDelete" title="Eliminar">
+        <button class="actionBtn delete" @click="confirmDelete" title="Delete">
           🗑
         </button>
       </template>
       <template v-else>
-        <span class="finalized">Finalizado</span>
+        <span class="finalized">Finalized</span>
       </template>
     </div>
     <div class="tripActions" v-else>
-      <span class="lockedLabel">Bloqueado</span>
+      <span class="lockedLabel">Locked</span>
     </div>
   </div>
 </template>
@@ -65,9 +65,9 @@ const emit = defineEmits(["edit", "delete", "cancel", "complete"]);
 
 const statusLabel = computed(() => {
   const map = {
-    scheduled: "Programado",
-    canceled: "Cancelado",
-    completed: "Completado",
+    scheduled: "Scheduled",
+    canceled: "Canceled",
+    completed: "Completed",
   };
   return map[props.trip.status] || props.trip.status;
 });
@@ -75,19 +75,23 @@ const statusLabel = computed(() => {
 function formatTime(dateStr) {
   if (!dateStr) return "--:--";
   const d = new Date(dateStr);
-  return d.toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit" });
+  const hours = d.getUTCHours();
+  const minutes = d.getUTCMinutes();
+  const period = hours >= 12 ? "p.m." : "a.m.";
+  const displayHours = hours % 12 || 12;
+  return `${displayHours}:${String(minutes).padStart(2, "0")} ${period}`;
 }
 
 async function confirmDelete() {
   const result = await Swal.fire({
-    title: "¿Eliminar viaje?",
-    text: "Esta acción no se puede deshacer",
+    title: "Delete trip?",
+    text: "This action cannot be undone",
     icon: "warning",
     showCancelButton: true,
     confirmButtonColor: "#d33",
     cancelButtonColor: "#3085d6",
-    confirmButtonText: "Sí, eliminar",
-    cancelButtonText: "Cancelar",
+    confirmButtonText: "Yes, delete",
+    cancelButtonText: "Cancel",
   });
 
   if (result.isConfirmed) {

@@ -6,22 +6,26 @@
       <div class="formFields">
         <label class="field">
           <span>Name</span>
-          <input v-model="form.name" placeholder="Bus 01" />
+          <input v-model="form.name" placeholder="Bus 01" @blur="touched.name = true" />
+          <p v-if="nameError" class="fieldError">{{ nameError }}</p>
         </label>
 
         <label class="field">
           <span>Model</span>
-          <input v-model="form.model" placeholder="Mercedes-Benz Sprinter" />
+          <input v-model="form.model" placeholder="Mercedes-Benz Sprinter" @blur="touched.model = true" />
+          <p v-if="modelError" class="fieldError">{{ modelError }}</p>
         </label>
 
         <label class="field">
           <span>VIN</span>
-          <input v-model="form.vin" placeholder="1HGBH41JXMN109186" />
+          <input v-model="form.vin" placeholder="1HGBH41JXMN109186" maxlength="17" @blur="touched.vin = true" />
+          <p v-if="vinError" class="fieldError">{{ vinError }}</p>
         </label>
 
         <label class="field">
-          <span>plate</span>
-          <input v-model="form.plateNumber" placeholder="ABC-123" />
+          <span>Plate</span>
+          <input v-model="form.plateNumber" placeholder="ABC-12-34" @blur="touched.plateNumber = true" />
+          <p v-if="plateError" class="fieldError">{{ plateError }}</p>
         </label>
 
         <label class="field">
@@ -48,26 +52,32 @@
             v-model.number="form.capacity"
             type="number"
             placeholder="40"
+            min="1"
+            max="60"
+            @blur="touched.capacity = true"
           />
+          <p v-if="capacityError" class="fieldError">{{ capacityError }}</p>
         </label>
 
         <label class="field">
           <span>Status</span>
-          <select v-model="form.status">
+          <select v-model="form.status" @blur="touched.status = true">
             <option value="">Select...</option>
             <option value="Activo">Active</option>
             <option value="Inactivo">Inactive</option>
             <option value="Mantenimiento">Maintenance</option>
           </select>
+          <p v-if="statusError" class="fieldError">{{ statusError }}</p>
         </label>
 
         <label class="field">
-          <span>Route (ID)</span>
-          <input
-            v-model.number="form.routeId"
-            type="number"
-            placeholder="Route ID (optional)"
-          />
+          <span>Route</span>
+          <select v-model="form.routeId">
+            <option :value="null">No route assigned</option>
+            <option v-for="route in routes" :key="route.id" :value="route.id">
+              {{ route.name }} ({{ route.origin.name }} → {{ route.destination.name }})
+            </option>
+          </select>
         </label>
       </div>
 
@@ -78,8 +88,9 @@
         </div>
         <label class="photoInput">
           <span>Select photo</span>
-          <input type="file" accept="image/*" @change="onPhotoChange" />
+          <input type="file" accept=".jpg,.jpeg,.png,.webp" @change="onPhotoChange" />
         </label>
+        <p v-if="photoError" class="fieldError">{{ photoError }}</p>
       </div>
     </div>
 
@@ -92,8 +103,9 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from "vue";
+import { ref, computed, watch, onMounted } from "vue";
 import { compressImage } from "@/utils/imageCompressor";
+import { getRoutes } from "@/services/routesApi";
 
 const props = defineProps({
   initialData: {
@@ -121,6 +133,34 @@ const form = ref({
 
 const photoFile = ref(null);
 const photoPreview = ref(null);
+const photoError = ref("");
+const routes = ref([]);
+
+onMounted(async () => {
+  try {
+    const data = await getRoutes();
+    routes.value = data.routes || data || [];
+  } catch (e) {
+    console.error("Failed to load routes:", e);
+  }
+});
+
+const touched = ref({
+  name: false,
+  model: false,
+  vin: false,
+  plateNumber: false,
+  capacity: false,
+  status: false,
+});
+
+// El vin son 17 caracteres alfanuméricos sin I, O, Q
+const vinRegex = /^[A-HJ-NPR-Z0-9]{17}$/i;
+
+// Plaac mexa: ABC-12-34, ABC-123-A, 123-ABC, etc.
+const plateRegex = /^[A-Z]{2,3}[-\s]?\d{2,3}[-\s]?[A-Z0-9]{1,3}$/i;
+
+const allowedImageTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
 
 watch(
   () => props.initialData,
@@ -145,20 +185,87 @@ watch(
   { immediate: true }
 );
 
+const nameError = computed(() => {
+  if (!touched.value.name) return "";
+  if (!form.value.name) return "Name is required";
+  return "";
+});
+
+const modelError = computed(() => {
+  if (!touched.value.model) return "";
+  if (!form.value.model) return "Model is required";
+  return "";
+});
+
+const vinError = computed(() => {
+  if (!touched.value.vin) return "";
+  if (!form.value.vin) return "VIN is required";
+  if (!vinRegex.test(form.value.vin)) return "VIN must be 17 alphanumeric characters (no I, O, Q)";
+  return "";
+});
+
+const plateError = computed(() => {
+  if (!touched.value.plateNumber) return "";
+  if (!form.value.plateNumber) return "Plate number is required";
+  if (!plateRegex.test(form.value.plateNumber)) return "Invalid Mexican plate format (e.g., ABC-12-34)";
+  return "";
+});
+
+const capacityError = computed(() => {
+  if (!touched.value.capacity) return "";
+  if (!form.value.capacity) return "Capacity is required";
+  if (form.value.capacity < 1) return "Capacity must be at least 1";
+  if (form.value.capacity > 60) return "Capacity cannot exceed 60 passengers";
+  return "";
+});
+
+const statusError = computed(() => {
+  if (!touched.value.status) return "";
+  if (!form.value.status) return "Status is required";
+  return "";
+});
+
 const isValid = computed(() => {
-  return (
+  const hasRequiredFields = 
     form.value.name &&
     form.value.model &&
     form.value.vin &&
     form.value.plateNumber &&
     form.value.capacity &&
-    form.value.status
-  );
+    form.value.status;
+  
+  const noErrors = 
+    !nameError.value &&
+    !modelError.value &&
+    !vinError.value &&
+    !plateError.value &&
+    !capacityError.value &&
+    !statusError.value &&
+    !photoError.value;
+  
+  return hasRequiredFields && noErrors;
 });
+
+const touchAll = () => {
+  touched.value.name = true;
+  touched.value.model = true;
+  touched.value.vin = true;
+  touched.value.plateNumber = true;
+  touched.value.capacity = true;
+  touched.value.status = true;
+};
 
 const onPhotoChange = async (event) => {
   const file = event.target.files[0];
+  photoError.value = "";
+  
   if (file) {
+    if (!allowedImageTypes.includes(file.type)) {
+      photoError.value = "Only JPG, PNG, and WebP images are allowed";
+      event.target.value = "";
+      return;
+    }
+    
     const compressedFile = await compressImage(file);
     photoFile.value = compressedFile;
     photoPreview.value = URL.createObjectURL(compressedFile);
@@ -166,11 +273,14 @@ const onPhotoChange = async (event) => {
 };
 
 const emitSave = () => {
+  touchAll();
+  if (!isValid.value) return;
+  
   const formData = new FormData();
   formData.append("name", form.value.name);
   formData.append("model", form.value.model);
-  formData.append("vin", form.value.vin);
-  formData.append("plateNumber", form.value.plateNumber);
+  formData.append("vin", form.value.vin.toUpperCase());
+  formData.append("plateNumber", form.value.plateNumber.toUpperCase());
   formData.append("capacity", String(form.value.capacity));
   formData.append("status", form.value.status);
 
@@ -255,6 +365,13 @@ const emitSave = () => {
   select {
     cursor: pointer;
   }
+}
+
+.fieldError {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #b00020;
+  margin: 0;
 }
 
 .photoSection {
