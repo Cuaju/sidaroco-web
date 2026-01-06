@@ -93,7 +93,7 @@ export async function deleteBus(id) {
 export async function getAllDrivers() {
   console.log("getAllDrivers ejecutándose");
 
-  const res = await fetch(`${FLEET_API}/drivers`, {
+  const res = await fetch(`${FLEET_API}/drivers/`, {
     headers: getAuthHeaders(),
   });
   console.log("STATUS =", res.status);

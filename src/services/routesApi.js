@@ -33,7 +33,7 @@ export async function getRoutes({
     params.append("featured", String(featured));
   }
 
-  const res = await fetch(`${ROUTES_API}/routes?${params.toString()}`, {
+  const res = await fetch(`${ROUTES_API}/routes/?${params.toString()}`, {
     headers: getAuthHeaders(),
   });
   return await res.json();
