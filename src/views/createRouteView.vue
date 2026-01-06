@@ -61,11 +61,20 @@ const geocode = async (place) => {
   );
 
   const data = await res.json();
-  if (!data.features.length) return null;
+  if (!data.features?.length) return null;
 
-  const [lng, lat] = data.features[0].center;
-  return { name: place, lat, lng };
+  const feature = data.features[0];
+  const [lng, lat] = feature.center;
+
+  return {
+    mapboxId: feature.id,        
+    name: feature.text,           
+    fullName: feature.place_name,  
+    lat,
+    lng,
+  };
 };
+
 
 const saveRoute = async ({
   name,
@@ -104,10 +113,27 @@ const saveRoute = async ({
 
     toast.success("Route saved successfully");
     router.back();
-  } catch (err) {
-    console.error(err);
-    toast.error("Error saving route");
+  }  catch (err) {
+  console.error("CREATE ROUTE ERROR:", err);
+
+  if (err?.status === 409) {
+    switch (err.message) {
+      case "ROUTE_NAME_EXISTS":
+        toast.warning("A route with this name already exists");
+        return;
+
+      case "ROUTE_ORIGIN_DESTINATION_EXISTS":
+        toast.warning(
+          "A route with the same origin and destination already exists"
+        );
+        return;
+    }
   }
+
+  toast.error("Error saving route");
+}
+
+
 };
 
 const traceRoute = async ({ originText, destinationText }) => {

@@ -59,18 +59,23 @@ export async function createRoute(formData) {
   const res = await fetch(`${ROUTES_API}/routes/`, {
     method: "POST",
     headers: getAuthHeaders(),
-    body: formData, 
+    body: formData,
   });
 
   const data = await res.json().catch(() => ({}));
 
   if (!res.ok) {
     console.error("BACKEND RESPONSE:", data);
-    throw new Error(data.detail || data.message || "Error creating route");
+
+    throw {
+      status: res.status,
+      message: data.message || data.detail || "Error creating route",
+    };
   }
 
   return data;
 }
+
 
 export async function deleteRoute(id) {
   const res = await fetch(`${ROUTES_API}/routes/${id}`, {
