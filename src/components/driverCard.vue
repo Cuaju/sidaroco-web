@@ -283,7 +283,7 @@ export default {
   &.licencia,
   &.vacation {
     background: rgba($thirdColor, 0.25);
-    color: color.adjust($thirdColor, $lightness: -25%);
+    color: darken($thirdColor, 25%);
   }
 }
 
