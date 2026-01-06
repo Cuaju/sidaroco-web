@@ -7,6 +7,7 @@ import { useAuthStore } from "@/stores/authStore";
 const routes = [
   { path: "/", name: "login", component: () => import("../views/login.vue") },
   { path: "/home", name: "home", component: () => import("../views/home.vue") },
+  { path: "/profile", name: "profile", component: () => import("../views/profileView.vue") },
   { path: "/myTrips", name: "myTrips", component: () => import("../views/myTrips.vue") },
   { path: "/register", name: "registerAccount", component: () => import("../views/registerAccount.vue") },
   { path: "/verify-email", name: "verifyEmail", component: () => import("../views/verifyEmail.vue") },

@@ -62,3 +62,44 @@ export function setAdminActive(accountId, isActive) {
     return data;
   });
 }
+
+
+export function getMe() {
+  return fetch(`${USERS_API}/api/users/me`, {
+    headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
+  }).then(async (r) => {
+    const data = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(data.message || "request failed");
+    return data;
+  });
+}
+
+export function patchMe(payload) {
+  return fetch(`${USERS_API}/api/users/me`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${localStorage.getItem("token")}`
+    },
+    body: JSON.stringify(payload)
+  }).then(async (r) => {
+    const data = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(data.message || "request failed");
+    return data; 
+  });
+}
+
+export function changeMyPassword(payload) {
+  return fetch(`${USERS_API}/api/users/me/password`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${localStorage.getItem("token")}`
+    },
+    body: JSON.stringify(payload)
+  }).then(async (r) => {
+    const data = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(data.message || "request failed");
+    return data;
+  });
+}
