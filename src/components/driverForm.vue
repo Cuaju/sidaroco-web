@@ -6,17 +6,20 @@
       <div class="formFields">
         <label class="field">
           <span>Name</span>
-          <input v-model="form.name" placeholder="Juan Pérez" />
+          <input v-model="form.name" placeholder="Juan Pérez" @blur="touched.name = true" />
+          <p v-if="nameError" class="fieldError">{{ nameError }}</p>
         </label>
 
         <label class="field">
           <span>License number</span>
-          <input v-model="form.licenseNumber" placeholder="LIC-123456" />
+          <input v-model="form.licenseNumber" placeholder="ABC1234567890" maxlength="18" @blur="touched.licenseNumber = true" />
+          <p v-if="licenseError" class="fieldError">{{ licenseError }}</p>
         </label>
 
         <label class="field">
           <span>Birthdate</span>
-          <input v-model="form.birdthDate" type="date" />
+          <input v-model="form.birdthDate" type="date" @blur="touched.birdthDate = true" />
+          <p v-if="birthdateError" class="fieldError">{{ birthdateError }}</p>
         </label>
 
         <label class="field">
@@ -24,7 +27,10 @@
           <input
             v-model="form.address"
             placeholder="Street 123, Colonia, Ciudad"
+            maxlength="200"
+            @blur="touched.address = true"
           />
+          <p v-if="addressError" class="fieldError">{{ addressError }}</p>
         </label>
 
         <label class="field">
@@ -41,12 +47,13 @@
 
         <label class="field">
           <span>Status</span>
-          <select v-model="form.status">
+          <select v-model="form.status" @blur="touched.status = true">
             <option value="">Select...</option>
             <option value="Activo">Active</option>
             <option value="Inactivo">Inactive</option>
             <option value="Licencia">License</option>
           </select>
+          <p v-if="statusError" class="fieldError">{{ statusError }}</p>
         </label>
       </div>
 
@@ -57,8 +64,9 @@
         </div>
         <label class="photoInput">
           <span>Select photo</span>
-          <input type="file" accept="image/*" @change="onPhotoChange" />
+          <input type="file" accept=".jpg,.jpeg,.png,.webp" @change="onPhotoChange" />
         </label>
+        <p v-if="photoError" class="fieldError">{{ photoError }}</p>
       </div>
     </div>
 
@@ -98,6 +106,32 @@ const form = ref({
 
 const photoFile = ref(null);
 const photoPreview = ref(null);
+const photoError = ref("");
+
+const touched = ref({
+  name: false,
+  licenseNumber: false,
+  birdthDate: false,
+  address: false,
+  status: false,
+});
+
+// Licencia Mexa
+const licenseRegex = /^[A-Z0-9]{8,18}$/i;
+
+const allowedImageTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
+
+const calculateAge = (birthdate) => {
+  if (!birthdate) return null;
+  const today = new Date();
+  const birth = new Date(birthdate);
+  let age = today.getFullYear() - birth.getFullYear();
+  const monthDiff = today.getMonth() - birth.getMonth();
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+    age--;
+  }
+  return age;
+};
 
 watch(
   () => props.initialData,
@@ -120,19 +154,81 @@ watch(
   { immediate: true }
 );
 
+const nameError = computed(() => {
+  if (!touched.value.name) return "";
+  if (!form.value.name) return "Name is required";
+  return "";
+});
+
+const licenseError = computed(() => {
+  if (!touched.value.licenseNumber) return "";
+  if (!form.value.licenseNumber) return "License number is required";
+  if (!licenseRegex.test(form.value.licenseNumber)) return "License must be 8-18 alphanumeric characters";
+  return "";
+});
+
+const birthdateError = computed(() => {
+  if (!touched.value.birdthDate) return "";
+  if (!form.value.birdthDate) return "Birthdate is required";
+  
+  const age = calculateAge(form.value.birdthDate);
+  if (age === null) return "Invalid birthdate";
+  if (age < 18) return "Driver must be at least 18 years old";
+  if (age > 65) return "Driver cannot be older than 65 years";
+  return "";
+});
+
+const addressError = computed(() => {
+  if (!touched.value.address) return "";
+  if (!form.value.address) return "Address is required";
+  if (form.value.address.length > 200) return "Address cannot exceed 200 characters";
+  return "";
+});
+
+const statusError = computed(() => {
+  if (!touched.value.status) return "";
+  if (!form.value.status) return "Status is required";
+  return "";
+});
+
 const isValid = computed(() => {
-  return (
+  const hasRequiredFields = 
     form.value.name &&
     form.value.licenseNumber &&
     form.value.birdthDate &&
     form.value.address &&
-    form.value.status
-  );
+    form.value.status;
+  
+  const noErrors = 
+    !nameError.value &&
+    !licenseError.value &&
+    !birthdateError.value &&
+    !addressError.value &&
+    !statusError.value &&
+    !photoError.value;
+  
+  return hasRequiredFields && noErrors;
 });
+
+const touchAll = () => {
+  touched.value.name = true;
+  touched.value.licenseNumber = true;
+  touched.value.birdthDate = true;
+  touched.value.address = true;
+  touched.value.status = true;
+};
 
 const onPhotoChange = async (event) => {
   const file = event.target.files[0];
+  photoError.value = "";
+  
   if (file) {
+    if (!allowedImageTypes.includes(file.type)) {
+      photoError.value = "Only JPG, PNG, and WebP images are allowed";
+      event.target.value = "";
+      return;
+    }
+    
     const compressedFile = await compressImage(file);
     photoFile.value = compressedFile;
     photoPreview.value = URL.createObjectURL(compressedFile);
@@ -140,9 +236,12 @@ const onPhotoChange = async (event) => {
 };
 
 const emitSave = () => {
+  touchAll();
+  if (!isValid.value) return;
+  
   const formData = new FormData();
   formData.append("name", form.value.name);
-  formData.append("licenseNumber", form.value.licenseNumber);
+  formData.append("licenseNumber", form.value.licenseNumber.toUpperCase());
   // Convert to ISO-8601 for Prisma
   const isoDate = new Date(form.value.birdthDate).toISOString();
   formData.append("birdthDate", isoDate);
@@ -226,6 +325,13 @@ const emitSave = () => {
   select {
     cursor: pointer;
   }
+}
+
+.fieldError {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #b00020;
+  margin: 0;
 }
 
 .photoSection {
