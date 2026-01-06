@@ -22,29 +22,23 @@
       </div>
 
       <div v-else class="tripGroups">
-        <div 
-          v-for="group in groupedTickets" 
-          :key="group.tripId" 
-          class="tripGroup"
-        >
+        <div v-for="group in groupedTickets" :key="group.tripId" class="tripGroup">
           <div class="tripHeader">
             <div class="tripInfo">
               <span class="routeName">{{ group.routeName }}</span>
-              <span class="tripDate">{{ formatDate(group.departureTime) }} at {{ formatTime(group.departureTime) }}</span>
+              <span class="tripDate">{{ formatDate(group.departureTime) }} at {{ formatTime(group.departureTime)
+                }}</span>
             </div>
             <div class="tripMeta">
-              <span class="ticketCount">{{ group.tickets.length }} ticket{{ group.tickets.length > 1 ? 's' : '' }}</span>
+              <span class="ticketCount">{{ group.tickets.length }} ticket{{ group.tickets.length > 1 ? 's' : ''
+                }}</span>
               <span class="statusBadge" :class="getTripStatus(group.departureTime).class">
                 {{ getTripStatus(group.departureTime).label }}
               </span>
             </div>
           </div>
           <div class="ticketsList">
-            <TicketCard 
-              v-for="ticket in group.tickets" 
-              :key="ticket.id" 
-              :ticket="ticket"
-            />
+            <TicketCard v-for="ticket in group.tickets" :key="ticket.id" :ticket="ticket" />
           </div>
         </div>
       </div>
@@ -78,7 +72,7 @@ export default {
 
     groupedTickets() {
       const groups = {};
-      
+
       for (const ticket of this.tickets) {
         const tripId = ticket.tripId;
         if (!groups[tripId]) {
@@ -92,7 +86,6 @@ export default {
         groups[tripId].tickets.push(ticket);
       }
 
-      // Sort groups by departure time (most recent first)
       return Object.values(groups).sort((a, b) => {
         if (!a.departureTime) return 1;
         if (!b.departureTime) return -1;
@@ -157,13 +150,13 @@ export default {
 
         const tripIds = [...new Set(tickets.map(t => t.tripId))];
         console.log('🚌 Trip IDs:', tripIds);
-        
+
         const trips = await getTripsByIds(tripIds, token);
         console.log('🚌 Trips received:', trips);
 
         const scheduleIds = [...new Set(trips.map(t => t.dailyScheduleId).filter(Boolean))];
         console.log('Schedule IDs:', scheduleIds);
-        
+
         const schedules = await Promise.all(
           scheduleIds.map(async (id) => {
             try {
@@ -174,7 +167,7 @@ export default {
           })
         );
         console.log('Schedules received:', schedules);
-        
+
         const schedulesById = Object.fromEntries(
           schedules.filter(Boolean).map(s => [s.id, s])
         );
@@ -185,7 +178,7 @@ export default {
             if (schedule?.serviceDate && t.departureTime) {
               const timeOnly = new Date(t.departureTime);
               const serviceDate = new Date(schedule.serviceDate);
-              
+
               const combinedDateTime = new Date(serviceDate);
               combinedDateTime.setUTCHours(
                 timeOnly.getUTCHours(),
@@ -193,47 +186,41 @@ export default {
                 timeOnly.getUTCSeconds(),
                 0
               );
-              
+
               return [t.id, { ...t, departureTime: combinedDateTime.toISOString() }];
             }
             return [t.id, t];
           })
         );
 
-        // Fetch route information for each trip
         const routeIds = [...new Set(trips.map(t => t.routeId))];
         console.log('🗺️ Route IDs:', routeIds);
-        
+
         const routes = await Promise.all(
           routeIds.map(routeId => getRouteById(routeId))
         );
         console.log('🗺️ Routes received:', routes);
-        
+
         const routesById = Object.fromEntries(
           routes.map(r => [r.id, r])
         );
 
-        // Fetch all locations (origin and destination)
         const locationIds = [...new Set(
           routes.flatMap(r => [r.originId, r.destinationId])
         )];
         console.log('📍 Location IDs:', locationIds);
 
-        // Assuming you have a getLocationById function - if not, we'll extract from route.origin/destination
-        // For now, let's work with what we have
-        
         this.tickets = tickets.map(t => {
           const trip = tripsById[t.tripId];
           const route = trip ? routesById[trip.routeId] : null;
-          
+
           const ticket = {
             ...t,
             trip,
             route,
-            // Use route.ticketPrice if ticket.price is 0
             price: t.price || route?.ticketPrice || 0
           };
-          
+
           console.log('🎫 Processed ticket:', ticket);
           return ticket;
         });
@@ -348,7 +335,7 @@ h1 {
   background: rgba($primaryColor, 0.1);
 }
 
-.ticketsList > :deep(.ticketCard) {
+.ticketsList> :deep(.ticketCard) {
   background: white;
 }
 

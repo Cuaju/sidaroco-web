@@ -7,7 +7,7 @@
         <select v-model="selectedRoute" @change="loadReport">
           <option disabled value="">Select route</option>
           <option v-for="r in routes" :key="r.id" :value="r.id">
-            {{ r.name ?? `Route ${r.id}` }}
+            {{ r.origin.name }} → {{ r.destination.name }}
           </option>
         </select>
 
@@ -21,24 +21,53 @@
       </div>
     </header>
 
-    <div class="card">
-      <div class="row">
-        <span>Route</span>
-        <strong>{{ report?.routeId ?? "—" }}</strong>
+    <div class="grid">
+      <div class="card">
+        <div class="row">
+          <span>Route</span>
+          <strong>{{ selectedRouteLabel }}</strong>
+        </div>
+        <div class="row">
+          <span>Tickets sold</span>
+          <strong>{{ report?.totalTickets ?? "—" }}</strong>
+        </div>
+        <div class="row">
+          <span>Total income</span>
+          <strong>{{ report?.totalIncome ?? "—" }}</strong>
+        </div>
+        <div class="row">
+          <span>Period</span>
+          <strong>{{ formatMonthEnglish(report?.year, report?.month) }}</strong>
+        </div>
       </div>
-      <div class="row">
-        <span>Tickets sold</span>
-        <strong>{{ report?.totalTickets ?? "—" }}</strong>
-      </div>
-      <div class="row">
-        <span>Total income</span>
-        <strong>{{ report?.totalIncome ?? "—" }}</strong>
-      </div>
-      <div class="row">
-        <span>Period</span>
-        <strong>{{ report ? `${report.year}-${report.month}` : "—" }}</strong>
+
+      <div class="tableCard">
+        <table>
+          <thead>
+            <tr>
+              <th>Route</th>
+              <th>Tickets</th>
+              <th>Income</th>
+            </tr>
+          </thead>
+          <tbody v-if="hasData">
+            <tr>
+              <td class="routeCell">{{ selectedRouteLabel }}</td>
+              <td class="numberCell">{{ report.totalTickets }}</td>
+              <td class="numberCell">{{ report.totalIncome }}</td>
+            </tr>
+          </tbody>
+          <tbody v-else>
+            <tr>
+              <td colspan="3" class="emptyState">
+                Insufficient data for selected period
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </div>
+
   </section>
 </template>
 
@@ -54,6 +83,11 @@ export default {
   computed: {
     hasData() {
       return this.report && this.report.totalTickets > 0;
+    },
+    selectedRouteLabel() {
+      const r = this.routes.find(r => r.id === this.selectedRoute);
+      if (!r) return "—";
+      return `${r.id} · ${r.origin.name} → ${r.destination.name}`;
     }
   },
 

@@ -63,6 +63,7 @@ import { getDailyReport } from "@/services/ticketsApi";
 import { getRoutes } from "@/services/routesApi";
 import { buildFinanceReportPdf } from "@/utils/reportPDFBuilder";
 import logo from "@/assets/images/logoBase64";
+import { useAuthStore } from "@/stores/authStore";
 
 export default {
     name: "dailySummaryView",
@@ -98,14 +99,14 @@ export default {
     },
     methods: {
         async loadReport() {
-            this.report = await getDailyReport(this.selectedDate, this.token);
+            const auth = useAuthStore();
+            this.report = await getDailyReport(this.selectedDate, auth.token);
         },
         formatDateEnglish(value) {
             if (!value) return "—";
 
             const [year, month, day] = value.split("-").map(Number);
 
-            // Fecha LOCAL, no UTC
             const d = new Date(year, month - 1, day);
 
             const suffix =
