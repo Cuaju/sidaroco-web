@@ -53,13 +53,6 @@
               <span class="value">${{ ticket.price }}</span>
             </div>
           </div>
-
-          <div v-if="ticket.route" class="detailItem full">
-            <div class="detailContent">
-              <span class="label">Route</span>
-              <span class="value">{{ ticket.route.name }}</span>
-            </div>
-          </div>
         </div>
 
         <button class="downloadBtn" @click.stop="downloadPdf">
