@@ -27,11 +27,11 @@
             <div class="tripInfo">
               <span class="routeName">{{ group.routeName }}</span>
               <span class="tripDate">{{ formatDate(group.departureTime) }} at {{ formatTime(group.departureTime)
-                }}</span>
+              }}</span>
             </div>
             <div class="tripMeta">
               <span class="ticketCount">{{ group.tickets.length }} ticket{{ group.tickets.length > 1 ? 's' : ''
-                }}</span>
+              }}</span>
               <span class="statusBadge" :class="getTripStatus(group.departureTime).class">
                 {{ getTripStatus(group.departureTime).label }}
               </span>
@@ -78,7 +78,10 @@ export default {
         if (!groups[tripId]) {
           groups[tripId] = {
             tripId,
-            routeName: ticket.route?.name || 'Route not available',
+            routeName:
+              ticket.route?.origin?.name && ticket.route?.destination?.name
+                ? `${ticket.route.origin.name} → ${ticket.route.destination.name}`
+                : ticket.route?.name || 'Route not available',
             departureTime: ticket.trip?.departureTime ? new Date(ticket.trip.departureTime) : null,
             tickets: []
           };

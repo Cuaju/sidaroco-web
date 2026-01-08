@@ -82,26 +82,30 @@ export default {
   props: {
     ticket: {
       type: Object,
-      required: true,
-    },
+      required: true
+    }
   },
 
   data() {
     return {
-      expanded: false,
+      expanded: false
     };
   },
 
   computed: {
     routeName() {
-      if (this.ticket?.route?.name) {
-        return this.ticket.route.name;
+      if (this.ticket?.route?.origin?.name && this.ticket?.route?.destination?.name) {
+        return `${this.ticket.route.origin.name} → ${this.ticket.route.destination.name}`;
       }
-      if (this.ticket?.route?.origin && this.ticket?.route?.destination) {
-        return `${this.ticket.route.origin} → ${this.ticket.route.destination}`;
+
+      if (typeof this.ticket?.route?.name === "string" && this.ticket.route.name.includes("→")) {
+        const [origin, destination] = this.ticket.route.name.split("→").map(p => p.trim());
+        return `${origin} → ${destination}`;
       }
+
       return "Route not available";
-    },
+    }
+    ,
 
     auth() {
       return useAuthStore();
@@ -118,13 +122,10 @@ export default {
       }
 
       const now = new Date();
-
-      if (this.tripDateTime < now) {
-        return { label: "Completed", class: "completed" };
-      } else {
-        return { label: "Upcoming", class: "upcoming" };
-      }
-    },
+      return this.tripDateTime < now
+        ? { label: "Completed", class: "completed" }
+        : { label: "Upcoming", class: "upcoming" };
+    }
   },
 
   methods: {
@@ -134,35 +135,45 @@ export default {
 
     formatDate(date) {
       if (!date) return "N/A";
-
-      const dateObj = date instanceof Date ? date : new Date(date);
-
-      return dateObj.toLocaleDateString("en-US", {
+      const d = date instanceof Date ? date : new Date(date);
+      return d.toLocaleDateString("en-US", {
         year: "numeric",
         month: "short",
-        day: "numeric",
+        day: "numeric"
       });
     },
 
     formatTime(date) {
       if (!date) return "N/A";
-
-      const dateObj = date instanceof Date ? date : new Date(date);
-
-      return dateObj.toLocaleTimeString("en-US", {
+      const d = date instanceof Date ? date : new Date(date);
+      return d.toLocaleTimeString("en-US", {
         hour: "2-digit",
-        minute: "2-digit",
+        minute: "2-digit"
       });
     },
 
     async downloadPdf() {
       const purchaseDate = new Date(this.ticket.createdAt);
-
       const account = this.auth.account;
+
+      let origin = "—";
+      let destination = "—";
+
+      if (this.ticket?.route?.origin?.name && this.ticket?.route?.destination?.name) {
+        origin = this.ticket.route.origin.name;
+        destination = this.ticket.route.destination.name;
+      } else if (typeof this.ticket?.route?.name === "string" && this.ticket.route.name.includes("→")) {
+        const [o, d] = this.ticket.route.name.split("→").map(p => p.trim());
+        origin = o;
+        destination = d;
+      }
+
 
       await buildTicketPdf({
         ticketId: this.ticket.id,
-        routeName: this.normalizeRouteName(this.routeName),
+        routeName: `${origin} → ${destination}`,
+        origin,
+        destination,
         travelDate: this.formatDate(this.tripDateTime),
         travelTime: this.formatTime(this.tripDateTime),
         purchaseDateTime: purchaseDate.toLocaleString("en-US"),
@@ -172,13 +183,8 @@ export default {
         email: account?.email ?? "—",
         logoBase64: sidarocoLogo
       });
-    },
-
-    normalizeRouteName(name) {
-      if (typeof name !== "string") return "—";
-      return name.replace(/[^a-zA-ZÀ-ÿ0-9\s]/g, "").replace(/\s+/g, " ").trim().replace(" ", " -> ");
     }
-  },
+  }
 };
 </script>
 

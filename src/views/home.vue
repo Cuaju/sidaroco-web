@@ -112,6 +112,7 @@ export default {
 
   async mounted() {
     this.routes = await getRoutes({ take: 100 });
+    console.log("ROUTES RAW FROM API:", this.routes);
 
     const originMap = new Map();
 

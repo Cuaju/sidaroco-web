@@ -92,7 +92,7 @@ export default {
     async mounted() {
         const routes = await getRoutes();
         this.routesMap = Object.fromEntries(
-            routes.map(r => [String(r.id), r.name ?? `Route ${r.id}`])
+            routes.map(r => [String(r.id), `${r.origin.name} -> ${r.destination.name}` ?? `Route ${r.id}`])
         );
 
         await this.loadReport();

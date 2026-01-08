@@ -27,7 +27,7 @@
 import UserMenu from "@/components/userMenu.vue";
 
 export default {
-  components: { UserMenu },
+    components: { UserMenu },
 };
 
 </script>
@@ -100,5 +100,9 @@ export default {
 
 .content {
     padding: 32px;
+}
+
+.content:has(#background) {
+    padding: 0;
 }
 </style>

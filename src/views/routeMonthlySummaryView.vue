@@ -87,7 +87,7 @@ export default {
     selectedRouteLabel() {
       const r = this.routes.find(r => r.id === this.selectedRoute);
       if (!r) return "—";
-      return `${r.id} · ${r.origin.name} → ${r.destination.name}`;
+      return `${r.origin.name} -> ${r.destination.name}`;
     }
   },
 
@@ -151,10 +151,11 @@ export default {
     },
     downloadPdf() {
       const [year, month] = this.selectedMonth.split("-");
-      const routeName =
-        this.routes.find(r => r.id === this.selectedRoute)?.name ??
-        `Route ${this.selectedRoute}`;
+      const route = this.routes.find(r => r.id === this.selectedRoute);
 
+      const routeName = route
+        ? `${route.origin.name} -> ${route.destination.name}`
+        : `Route ${this.selectedRoute}`;
       buildFinanceReportPdf({
         title: "Monthly Route Summary",
         periodLabel: this.formatMonthEnglish(year, month),

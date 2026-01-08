@@ -167,14 +167,18 @@ export default {
 @use "sass:color";
 
 .hero {
-  padding: 44px 18px 28px;
-  background: radial-gradient(circle at 30% 20%, $secondaryColor 0%, $primaryColor 55%, #001a18 100%);
+  min-height: calc(100vh - 80px);
+  padding: 44px 18px 60px;
+  background: radial-gradient(circle at 30% 20%, $secondaryColor 0%, $primaryColor 45%, #001a18 100%);
+  display: flex;
+  flex-direction: column;
 }
 
 .heroInner {
   width: min(980px, 96vw);
   margin: 0 auto;
   color: $fourthColor;
+  flex: 1;
 }
 
 h1 {
@@ -327,7 +331,6 @@ p {
   color: color.adjust($primaryColor, $lightness: -15%);
 }
 
-/* Responsive */
 @media (max-width: 768px) {
   .schedulesGrid {
     grid-template-columns: 1fr;
