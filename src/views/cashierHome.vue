@@ -23,7 +23,7 @@
 
             <label class="field">
               <span>Date</span>
-              <input type="date" v-model="selectedDate" />
+              <input type="date" v-model="selectedDate" :min="today" />
             </label>
           </div>
 
@@ -44,6 +44,8 @@ export default {
   components: { CashierLayout },
 
   data() {
+    const today = new Date();
+    const yyyyMmDd = today.toISOString().split("T")[0];
     return {
       routes: [],
       origins: [],
@@ -52,6 +54,7 @@ export default {
       selectedDestinationId: "",
       selectedDate: "",
       selectedOriginName: "",
+      today: yyyyMmDd
     };
   },
 
@@ -114,6 +117,13 @@ export default {
       this.destinations = Array.from(destinationMap.entries())
         .map(([id, name]) => ({ id, name }))
         .sort((a, b) => a.name.localeCompare(b.name, "es", { sensitivity: "base" }));
+    },
+    selectedDestinationId(newVal) {
+      if (!newVal) return;
+
+      if (!this.selectedDate || this.selectedDate < this.today) {
+        this.selectedDate = this.today;
+      }
     }
   },
 

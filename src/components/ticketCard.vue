@@ -2,6 +2,7 @@
   <article class="ticketCard" :class="{ expanded }" @click="toggleExpand">
     <div v-if="!expanded" class="collapsedRow">
       <span class="cell route">{{ routeName }}</span>
+      <span class="cell seat">Seat {{ ticket.seatNumber }}</span>
       <span class="cell date">{{ formatDate(tripDateTime) }}</span>
       <span class="cell price">${{ ticket.price }}</span>
       <span class="cell statusBadge" :class="tripStatus.class">
@@ -211,10 +212,17 @@ export default {
 /* COLLAPSED ROW */
 .collapsedRow {
   display: grid;
-  grid-template-columns: 2fr 1fr 100px 120px 40px;
+  grid-template-columns: 2fr 80px 1fr 100px 120px 40px;
   align-items: center;
   padding: 14px 20px;
-  gap: 16px;
+  gap: 12px;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr auto;
+    grid-template-rows: auto auto auto;
+    gap: 8px;
+    padding: 12px 16px;
+  }
 }
 
 .cell {
@@ -227,11 +235,54 @@ export default {
 
   &.route {
     font-weight: 800;
+
+    @media (max-width: 768px) {
+      grid-column: 1 / -1;
+      font-size: 15px;
+    }
+  }
+
+  &.seat {
+    background: linear-gradient(135deg, $primaryColor, $secondaryColor);
+    color: white;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-weight: 800;
+    font-size: 12px;
+    text-align: center;
+
+    @media (max-width: 768px) {
+      justify-self: start;
+    }
+  }
+
+  &.date {
+    @media (max-width: 768px) {
+      font-size: 13px;
+      color: rgba($primaryColor, 0.7);
+    }
   }
 
   &.price {
     font-weight: 700;
     color: $secondaryColor;
+
+    @media (max-width: 768px) {
+      font-size: 15px;
+    }
+  }
+
+  &.statusBadge {
+    @media (max-width: 768px) {
+      padding: 4px 8px;
+      font-size: 10px;
+    }
+  }
+
+  &.expandIcon {
+    @media (max-width: 768px) {
+      display: none;
+    }
   }
 }
 

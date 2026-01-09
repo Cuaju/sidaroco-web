@@ -118,7 +118,7 @@ export async function buildTicketPdf({
 
     pdf.setFontSize(8);
     pdf.setTextColor(100, 100, 100);
-    pdf.text("PASAJERO", 38, passengerY + 8);
+    pdf.text("PASSENGER", 38, passengerY + 8);
 
     pdf.setFontSize(13);
     pdf.setFont(undefined, "bold");
@@ -129,6 +129,21 @@ export async function buildTicketPdf({
     pdf.setFont(undefined, "normal");
     pdf.setTextColor(100, 100, 100);
     pdf.text(email, 38, passengerY + 24);
+
+    const amenitiesY = passengerY + 35;
+    
+    pdf.setFillColor(240, 248, 245);
+    pdf.roundedRect(30, amenitiesY, pageWidth - 60, 22, 3, 3, "F");
+    
+    pdf.setFontSize(8);
+    pdf.setTextColor(100, 100, 100);
+    pdf.text("AMENITIES", 38, amenitiesY + 7);
+    
+    pdf.setFontSize(10);
+    pdf.setFont(undefined, "bold");
+    pdf.setTextColor(...SECONDARY);
+    const amenities = "WiFi  •  A/C  •  Charger  •  Seats  •  Bathroom";
+    pdf.text(amenities, 38, amenitiesY + 16);
 
     const qrData = `TICKET:${ticketId}|ROUTE:${routeName}|DATE:${travelDate}|SEAT:${seat}`;
     const qrDataUrl = await QRCode.toDataURL(qrData, {
@@ -155,7 +170,7 @@ export async function buildTicketPdf({
     });
 
 
-    const infoY = passengerY + 45;
+    const infoY = amenitiesY + 30;
 
     pdf.setFontSize(8);
     pdf.setTextColor(120, 120, 120);
