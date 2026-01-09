@@ -66,7 +66,11 @@ export async function createRoute(formData) {
 
   if (!res.ok) {
     console.error("BACKEND RESPONSE:", data);
-    throw new Error(data.detail || data.message || "Error creating route");
+    throw {
+      status: res.status,
+      message: data.detail || data.message || "Error creating route",
+      data,
+    };
   }
 
   return data;
