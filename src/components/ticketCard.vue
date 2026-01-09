@@ -130,20 +130,24 @@ export default {
     formatDate(date) {
       if (!date) return "N/A";
       const d = date instanceof Date ? date : new Date(date);
-      return d.toLocaleDateString("en-US", {
-        year: "numeric",
-        month: "short",
-        day: "numeric"
-      });
+
+      const year = d.getUTCFullYear();
+      const month = d.toLocaleString('en-US', { month: 'short', timeZone: 'UTC' });
+      const day = d.getUTCDate();
+
+      return `${month} ${day}, ${year}`;
     },
 
     formatTime(date) {
       if (!date) return "N/A";
       const d = date instanceof Date ? date : new Date(date);
-      return d.toLocaleTimeString("en-US", {
-        hour: "2-digit",
-        minute: "2-digit"
-      });
+
+      const hours = d.getUTCHours();
+      const minutes = d.getUTCMinutes().toString().padStart(2, '0');
+      const ampm = hours >= 12 ? 'PM' : 'AM';
+      const hour12 = hours % 12 || 12;
+
+      return `${hour12}:${minutes} ${ampm}`;
     },
 
     async downloadPdf() {

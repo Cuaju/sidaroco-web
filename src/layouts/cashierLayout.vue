@@ -56,7 +56,7 @@ export default {
   justify-content: space-between;
   gap: 18px;
   padding: 0 22px;
-  background: rgba($primaryColor, 0.95);
+  background: rgba($secondaryColor, 0.92);
   backdrop-filter: blur(8px);
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }

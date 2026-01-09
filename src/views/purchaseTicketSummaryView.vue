@@ -339,7 +339,11 @@ export default {
     formatDate() {
       const date = this.$route.query.date;
       if (!date) return "";
-      return new Date(date + "T00:00:00").toLocaleDateString("en-US", {
+
+      const [year, month, day] = date.split("-").map(Number);
+      const localDate = new Date(year, month - 1, day);
+
+      return localDate.toLocaleDateString("en-US", {
         year: "numeric",
         month: "long",
         day: "numeric"
@@ -348,11 +352,12 @@ export default {
     formatTime() {
       const time = this.$route.query.time;
       if (!time) return "";
-      return new Date(time).toLocaleTimeString("en-GB", {
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: false
-      });
+
+      const dateObj = new Date(time);
+      const hours = dateObj.getUTCHours().toString().padStart(2, "0");
+      const minutes = dateObj.getUTCMinutes().toString().padStart(2, "0");
+
+      return `${hours}:${minutes}`;
     },
     formatPrice(price) {
       if (price === null || price === undefined) return "0.00";

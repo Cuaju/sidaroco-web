@@ -367,8 +367,8 @@ export default {
   border-radius: 6px;
 
   &.available {
-    background: #e0e0e0;
-    border: 2px solid #ccc;
+    background: $thirdColor;
+    border: 2px solid darken($thirdColor, 10%);
   }
 
   &.selected {
@@ -376,7 +376,8 @@ export default {
   }
 
   &.taken {
-    background: #ff6b6b;
+    background: #9ca3af;
+    border: 2px solid #6b7280;
   }
 }
 
