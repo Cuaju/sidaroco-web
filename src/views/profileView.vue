@@ -1,5 +1,5 @@
 <template>
-  <ClientLayout>
+  <component :is="layout">
     <section class="wrap">
       <div class="head">
         <h1>My profile</h1>
@@ -91,81 +91,72 @@
     </div>
 
     <div v-if="showPassword" class="modalOverlay" @click.self="closeModals">
-  <div class="modal">
-    <h3>Change password</h3>
-    <p class="sub">Use your current password to set a new one.</p>
+      <div class="modal">
+        <h3>Change password</h3>
+        <p class="sub">Use your current password to set a new one.</p>
 
-    <label class="field">
-      <span>Current password</span>
-      <input
-        v-model="currentPassword"
-        type="password"
-        autocomplete="current-password"
-      />
-    </label>
+        <label class="field">
+          <span>Current password</span>
+          <input v-model="currentPassword" type="password" autocomplete="current-password" />
+        </label>
 
-    <label class="field">
-      <span>New password</span>
-      <input
-        v-model="newPassword"
-        type="password"
-        autocomplete="new-password"
-        @input="passwordTouched = true"
-      />
-    </label>
+        <label class="field">
+          <span>New password</span>
+          <input v-model="newPassword" type="password" autocomplete="new-password" @input="passwordTouched = true" />
+        </label>
 
-    <label class="field">
-      <span>Confirm new password</span>
-      <input
-        v-model="confirmPassword"
-        type="password"
-        autocomplete="new-password"
-        @input="confirmTouched = true"
-      />
-    </label>
+        <label class="field">
+          <span>Confirm new password</span>
+          <input v-model="confirmPassword" type="password" autocomplete="new-password" @input="confirmTouched = true" />
+        </label>
 
-    <!-- Reactive rules -->
-    <div class="rulesCard" aria-live="polite">
-      <p class="rulesTitle">Password requirements</p>
+        <!-- Reactive rules -->
+        <div class="rulesCard" aria-live="polite">
+          <p class="rulesTitle">Password requirements</p>
 
-      <ul class="rules">
-        <li
-          v-for="r in passwordRules"
-          :key="r.key"
-          class="rule"
-          :class="{ ok: r.ok, bad: !r.ok }"
-        >
-          <span class="mark" aria-hidden="true">{{ r.ok ? "✓" : "✕" }}</span>
-          <span class="ruleText">{{ r.label }}</span>
-        </li>
-      </ul>
+          <ul class="rules">
+            <li v-for="r in passwordRules" :key="r.key" class="rule" :class="{ ok: r.ok, bad: !r.ok }">
+              <span class="mark" aria-hidden="true">{{ r.ok ? "✓" : "✕" }}</span>
+              <span class="ruleText">{{ r.label }}</span>
+            </li>
+          </ul>
 
-      <p v-if="passwordTouched && !passwordAllGood" class="hintLite">
-        Make it stronger to continue.
-      </p>
-    </div>
+          <p v-if="passwordTouched && !passwordAllGood" class="hintLite">
+            Make it stronger to continue.
+          </p>
+        </div>
 
-    <p v-if="modalErr" class="errorLite small">{{ modalErr }}</p>
-    <p v-if="modalOk" class="okLite">{{ modalOk }}</p>
+        <p v-if="modalErr" class="errorLite small">{{ modalErr }}</p>
+        <p v-if="modalOk" class="okLite">{{ modalOk }}</p>
 
-    <div class="modalActions">
-      <button class="btn ghost" @click="closeModals">Cancel</button>
-      <button class="btn" :disabled="!canSubmitPassword" @click="submitPassword">
-        {{ modalLoading ? "Updating..." : "Update password" }}
-      </button>
-    </div>
-  </div>
+        <div class="modalActions">
+          <button class="btn ghost" @click="closeModals">Cancel</button>
+          <button class="btn" :disabled="!canSubmitPassword" @click="submitPassword">
+            {{ modalLoading ? "Updating..." : "Update password" }}
+          </button>
+        </div>
+      </div>
 
     </div>
-  </ClientLayout>
+  </component>
 </template>
 
 <script>
+import CashierLayout from "../layouts/cashierLayout.vue";
 import ClientLayout from "../layouts/clientLayout.vue";
+import FinanceManagerLayout from "../layouts/financeManagerLayout.vue";
+import RouteManagerLayout from "../layouts/routeManagerLayout.vue";
 import { getMe, patchMe, changeMyPassword } from "@/services/usersApi";
 import { useToast } from "vue-toastification";
 
 const toast = useToast()
+
+const layoutByRole = {
+  Customer: ClientLayout,
+  Cashier: CashierLayout,
+  FinanceManager: FinanceManagerLayout,
+  RouteManager: RouteManagerLayout
+};
 
 export default {
   components: { ClientLayout },
@@ -205,41 +196,44 @@ export default {
   },
 
   computed: {
-  passwordChecks() {
-    const pw = this.newPassword || "";
-    const confirm = this.confirmPassword || "";
+    layout() {
+      return layoutByRole[this.account?.userType] ?? ClientLayout;
+    },
+    passwordChecks() {
+      const pw = this.newPassword || "";
+      const confirm = this.confirmPassword || "";
 
-    return {
-      minLen: pw.length >= 12,
-      hasUpper: /[A-Z]/.test(pw),
-      hasNumber: /\d/.test(pw),
-      hasSpecial: /[#$!*]/.test(pw), // exactly what you wanted
-      matches: pw.length > 0 && pw === confirm,
-    };
+      return {
+        minLen: pw.length >= 12,
+        hasUpper: /[A-Z]/.test(pw),
+        hasNumber: /\d/.test(pw),
+        hasSpecial: /[#$!*]/.test(pw),
+        matches: pw.length > 0 && pw === confirm,
+      };
+    },
+
+    passwordAllGood() {
+      const c = this.passwordChecks;
+      return c.minLen && c.hasUpper && c.hasNumber && c.hasSpecial && c.matches;
+    },
+
+    passwordRules() {
+      const c = this.passwordChecks;
+
+      return [
+        { key: "minLen", label: "At least 12 characters", ok: c.minLen },
+        { key: "upper", label: "At least 1 uppercase letter (A-Z)", ok: c.hasUpper },
+        { key: "num", label: "At least 1 number (0-9)", ok: c.hasNumber },
+        { key: "special", label: "At least 1 special character (# $ ! *)", ok: c.hasSpecial },
+        { key: "match", label: "New password matches confirmation", ok: c.matches },
+      ];
+    },
+
+    canSubmitPassword() {
+      const hasCurrent = typeof this.currentPassword === "string" && this.currentPassword.length > 0;
+      return !this.modalLoading && hasCurrent && this.passwordAllGood;
+    },
   },
-
-  passwordAllGood() {
-    const c = this.passwordChecks;
-    return c.minLen && c.hasUpper && c.hasNumber && c.hasSpecial && c.matches;
-  },
-
-  passwordRules() {
-    const c = this.passwordChecks;
-
-    return [
-      { key: "minLen", label: "At least 12 characters", ok: c.minLen },
-      { key: "upper", label: "At least 1 uppercase letter (A-Z)", ok: c.hasUpper },
-      { key: "num", label: "At least 1 number (0-9)", ok: c.hasNumber },
-      { key: "special", label: "At least 1 special character (# $ ! *)", ok: c.hasSpecial },
-      { key: "match", label: "New password matches confirmation", ok: c.matches },
-    ];
-  },
-
-  canSubmitPassword() {
-    const hasCurrent = typeof this.currentPassword === "string" && this.currentPassword.length > 0;
-    return !this.modalLoading && hasCurrent && this.passwordAllGood;
-  },
-},
 
   methods: {
     async refresh() {
@@ -303,34 +297,34 @@ export default {
       }
     },
 
-async submitPassword() {
-  this.resetModalMsgs();
+    async submitPassword() {
+      this.resetModalMsgs();
 
-  if (!this.canSubmitPassword) {
-    this.modalErr = "Fix the password requirements before updating.";
-    return;
-  }
+      if (!this.canSubmitPassword) {
+        this.modalErr = "Fix the password requirements before updating.";
+        return;
+      }
 
-  this.modalLoading = true;
-  try {
-    await changeMyPassword({
-      currentPassword: this.currentPassword,
-      newPassword: this.newPassword
-    });
+      this.modalLoading = true;
+      try {
+        await changeMyPassword({
+          currentPassword: this.currentPassword,
+          newPassword: this.newPassword
+        });
 
-    toast.success("Password Changed usccesfully")
-    this.modalOk = "Password updated.";
-    this.currentPassword = "";
-    this.newPassword = "";
-    this.confirmPassword = "";
-    this.passwordTouched = false;
-    this.confirmTouched = false;
-  } catch (e) {
-    this.modalErr = e?.message || "could not update password";
-  } finally {
-    this.modalLoading = false;
-  }
-},
+        toast.success("Password Changed usccesfully")
+        this.modalOk = "Password updated.";
+        this.currentPassword = "";
+        this.newPassword = "";
+        this.confirmPassword = "";
+        this.passwordTouched = false;
+        this.confirmTouched = false;
+      } catch (e) {
+        this.modalErr = e?.message || "could not update password";
+      } finally {
+        this.modalLoading = false;
+      }
+    },
 
 
     async saveProfile() {
@@ -382,14 +376,16 @@ async submitPassword() {
 }
 
 @media (min-width: 900px) {
-  .grid { grid-template-columns: 1.1fr 0.9fr; }
+  .grid {
+    grid-template-columns: 1.1fr 0.9fr;
+  }
 }
 
 .card {
   background: $fourthColor;
   border-radius: 20px;
   border: 1px solid rgba($primaryColor, 0.12);
-  box-shadow: 0 10px 30px rgba(0,0,0,.08);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, .08);
   padding: 18px;
 }
 
@@ -400,10 +396,24 @@ async submitPassword() {
   gap: 12px;
 }
 
-h2 { margin: 0; color: $primaryColor; font-weight: 1000; }
-.sub { margin: 6px 0 0; color: rgba($primaryColor, .7); font-weight: 700; }
+h2 {
+  margin: 0;
+  color: $primaryColor;
+  font-weight: 1000;
+}
 
-.rows { margin-top: 14px; display: grid; gap: 10px; }
+.sub {
+  margin: 6px 0 0;
+  color: rgba($primaryColor, .7);
+  font-weight: 700;
+}
+
+.rows {
+  margin-top: 14px;
+  display: grid;
+  gap: 10px;
+}
+
 .row {
   display: flex;
   justify-content: space-between;
@@ -413,8 +423,16 @@ h2 { margin: 0; color: $primaryColor; font-weight: 1000; }
   background: rgba($primaryColor, 0.04);
   border: 1px solid rgba($primaryColor, 0.10);
 }
-.k { color: rgba($primaryColor, .7); font-weight: 900; }
-.v { color: $primaryColor; font-weight: 900; }
+
+.k {
+  color: rgba($primaryColor, .7);
+  font-weight: 900;
+}
+
+.v {
+  color: $primaryColor;
+  font-weight: 900;
+}
 
 .actions {
   margin-top: 14px;
@@ -423,10 +441,23 @@ h2 { margin: 0; color: $primaryColor; font-weight: 1000; }
   flex-wrap: wrap;
 }
 
-.form { margin-top: 12px; display: grid; gap: 12px; }
+.form {
+  margin-top: 12px;
+  display: grid;
+  gap: 12px;
+}
 
-.field { display: flex; flex-direction: column; gap: 8px; }
-.field span { color: $primaryColor; font-weight: 900; opacity: .9; }
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.field span {
+  color: $primaryColor;
+  font-weight: 900;
+  opacity: .9;
+}
 
 input {
   height: 44px;
@@ -438,7 +469,11 @@ input {
   font-weight: 800;
   outline: none;
 }
-input:focus { border-color: $thirdColor; box-shadow: 0 0 0 4px rgba($thirdColor, 0.35); }
+
+input:focus {
+  border-color: $thirdColor;
+  box-shadow: 0 0 0 4px rgba($thirdColor, 0.35);
+}
 
 .btn {
   height: 44px;
@@ -450,6 +485,7 @@ input:focus { border-color: $thirdColor; box-shadow: 0 0 0 4px rgba($thirdColor,
   padding: 0 14px;
   cursor: pointer;
 }
+
 .btn.ghost {
   background: rgba($primaryColor, 0.08);
   color: $primaryColor;
@@ -473,7 +509,11 @@ input:focus { border-color: $thirdColor; box-shadow: 0 0 0 4px rgba($thirdColor,
   background: rgba(176, 0, 32, 0.12);
   border: 1px solid rgba(176, 0, 32, 0.25);
 }
-.errorLite.small { padding: 10px 12px; font-weight: 800; }
+
+.errorLite.small {
+  padding: 10px 12px;
+  font-weight: 800;
+}
 
 .okLite {
   padding: 10px 12px;
@@ -487,7 +527,7 @@ input:focus { border-color: $thirdColor; box-shadow: 0 0 0 4px rgba($thirdColor,
 .modalOverlay {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,.45);
+  background: rgba(0, 0, 0, .45);
   display: grid;
   place-items: center;
   padding: 18px;
@@ -499,7 +539,7 @@ input:focus { border-color: $thirdColor; box-shadow: 0 0 0 4px rgba($thirdColor,
   background: $fourthColor;
   border-radius: 18px;
   border: 1px solid rgba($primaryColor, 0.14);
-  box-shadow: 0 18px 60px rgba(0,0,0,.35);
+  box-shadow: 0 18px 60px rgba(0, 0, 0, .35);
   padding: 18px;
 }
 
@@ -560,10 +600,12 @@ input:focus { border-color: $thirdColor; box-shadow: 0 0 0 4px rgba($thirdColor,
   border-color: rgba(0, 120, 80, 0.25);
   background: rgba(0, 120, 80, 0.08);
 }
+
 .rule.ok .dot {
   border-color: rgba(0, 120, 80, 0.6);
   background: rgba(0, 120, 80, 0.6);
 }
+
 .rule.ok .ruleText {
   color: #006b4a;
 }
@@ -572,10 +614,12 @@ input:focus { border-color: $thirdColor; box-shadow: 0 0 0 4px rgba($thirdColor,
   border-color: rgba(176, 0, 32, 0.25);
   background: rgba(176, 0, 32, 0.08);
 }
+
 .rule.bad .dot {
   border-color: rgba(176, 0, 32, 0.55);
   background: rgba(176, 0, 32, 0.25);
 }
+
 .rule.bad .ruleText {
   color: rgba(176, 0, 32, 0.95);
 }

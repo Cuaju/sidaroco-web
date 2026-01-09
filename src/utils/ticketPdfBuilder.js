@@ -38,10 +38,6 @@ export async function buildTicketPdf({
     pdf.setTextColor(255, 255, 255);
     pdf.text("BOARDING PASS", pageWidth - 20, 28, { align: "right" });
 
-    pdf.setFontSize(11);
-    pdf.setFont(undefined, "normal");
-    pdf.text(`Ticket #${ticketId}`, pageWidth - 20, 38, { align: "right" });
-
     const y = 65;
 
     pdf.setFillColor(220, 220, 220);
@@ -89,8 +85,42 @@ export async function buildTicketPdf({
     pdf.setDrawColor(...SECONDARY);
     pdf.setLineWidth(1);
     pdf.line(pageWidth / 2 - 25, routeY - 4, pageWidth / 2 + 25, routeY - 4);
+    const busCenterX = pageWidth / 2;
+    const busY = routeY - 8;
 
-    const detailsY = y + 52;
+    pdf.setFillColor(...SECONDARY);
+    pdf.roundedRect(busCenterX - 8, busY, 16, 6, 1, 1, "F");
+
+    pdf.setFillColor(255, 180, 0);
+    pdf.roundedRect(busCenterX - 7.5, busY - 1, 15, 1.5, 0.5, 0.5, "F");
+
+    pdf.setFillColor(135, 206, 235);
+    pdf.roundedRect(busCenterX - 6.5, busY + 1, 3, 2, 0.3, 0.3, "F");
+    pdf.roundedRect(busCenterX - 2, busY + 1, 3, 2, 0.3, 0.3, "F");
+    pdf.roundedRect(busCenterX + 2.5, busY + 1, 3, 2, 0.3, 0.3, "F");
+
+    pdf.setFillColor(135, 206, 235);
+    pdf.triangle(
+        busCenterX + 6, busY + 1,
+        busCenterX + 7.5, busY + 1,
+        busCenterX + 7.5, busY + 2.5,
+        "F"
+    );
+
+    pdf.setFillColor(255, 107, 53);
+    pdf.rect(busCenterX - 8, busY + 3.5, 16, 0.8, "F");
+
+    pdf.setFillColor(...DARK);
+    pdf.circle(busCenterX - 5, busY + 6.5, 1, "F");
+    pdf.circle(busCenterX + 5, busY + 6.5, 1, "F");
+
+    pdf.setFillColor(100, 100, 100);
+    pdf.circle(busCenterX - 5, busY + 6.5, 0.6, "F");
+    pdf.circle(busCenterX + 5, busY + 6.5, 0.6, "F");
+
+    pdf.setFillColor(255, 255, 200);
+    pdf.circle(busCenterX + 7, busY + 4.5, 0.5, "F");
+    const detailsY = y + 34;
     const leftCol = 35;
     const rightCol = pageWidth / 2 + 10;
 
@@ -111,7 +141,7 @@ export async function buildTicketPdf({
     showDetail("Seat", seat, leftCol, detailsY + 20);
     showDetail("Price", `$${price}`, rightCol, detailsY + 20);
 
-    const passengerY = y + 120;
+    const passengerY = y + 75;
 
     pdf.setFillColor(...LIGHT);
     pdf.roundedRect(30, passengerY, pageWidth - 60, 30, 3, 3, "F");
@@ -131,14 +161,14 @@ export async function buildTicketPdf({
     pdf.text(email, 38, passengerY + 24);
 
     const amenitiesY = passengerY + 35;
-    
+
     pdf.setFillColor(240, 248, 245);
     pdf.roundedRect(30, amenitiesY, pageWidth - 60, 22, 3, 3, "F");
-    
+
     pdf.setFontSize(8);
     pdf.setTextColor(100, 100, 100);
     pdf.text("AMENITIES", 38, amenitiesY + 7);
-    
+
     pdf.setFontSize(10);
     pdf.setFont(undefined, "bold");
     pdf.setTextColor(...SECONDARY);
@@ -154,7 +184,7 @@ export async function buildTicketPdf({
 
     const qrSize = 30;
     const qrX = pageWidth - qrSize - 32;
-    const qrY = y + 54;
+    const qrY = y + 34;
 
     pdf.setFillColor(255, 255, 255);
     pdf.setDrawColor(...SECONDARY);
@@ -170,11 +200,11 @@ export async function buildTicketPdf({
     });
 
 
-    const infoY = amenitiesY + 30;
+    const infoY = amenitiesY + 28;
 
     pdf.setFontSize(8);
     pdf.setTextColor(120, 120, 120);
-    pdf.text(`Bought: ${purchaseDateTime}`, 20, infoY);
+    pdf.text(`  Bought: ${purchaseDateTime}`, 20, infoY);
 
     pdf.setFillColor(250, 250, 250);
     pdf.rect(20, infoY + 10, pageWidth - 40, 35, "F");
