@@ -60,6 +60,26 @@
             </button>
           </div>
 
+          <div class="emailSection">
+            <div class="emailInputGroup">
+              <input type="email" v-model="customerEmail" placeholder="Customer email address" class="emailInput"
+                :class="{ 'invalid': emailValidationError }" />
+              <button class="emailBtn" @click="sendTicketsToCustomer" :disabled="sendingEmail || !customerEmail">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2">
+                  <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                  <polyline points="22,6 12,13 2,6" />
+                </svg>
+                <span v-if="sendingEmail">Sending...</span>
+                <span v-else-if="emailSent">Sent!</span>
+                <span v-else>Send</span>
+              </button>
+            </div>
+            <p v-if="emailValidationError" class="emailErrorMsg">{{ emailValidationError }}</p>
+            <p v-if="emailError" class="emailErrorMsg">{{ emailError }}</p>
+            <p v-if="emailSent" class="emailSuccessMsg">Tickets sent successfully!</p>
+          </div>
+
           <button class="newSaleBtn" @click="newSale">
             Start New Sale
           </button>
@@ -254,7 +274,7 @@
 import CashierLayout from "../layouts/cashierLayout.vue";
 import { getTripById } from "@/services/scheduleApi";
 import { getRouteById } from "@/services/routesApi";
-import { createTicket } from "@/services/ticketsApi";
+import { createTicket, sendTicketsEmail } from "@/services/ticketsApi";
 import { buildTicketPdf } from "@/utils/ticketPdfBuilder";
 import logoBase64 from "@/assets/images/logoBase64";
 
@@ -272,7 +292,12 @@ export default {
       selectedSeats: [],
       createdTickets: [],
       seatPassengers: {},
-      paymentMethod: ""
+      paymentMethod: "",
+      customerEmail: "",
+      sendingEmail: false,
+      emailSent: false,
+      emailError: "",
+      emailValidationError: ""
     };
   },
 
@@ -418,6 +443,54 @@ export default {
     formatPrice(price) {
       if (price === null || price === undefined) return "0.00";
       return Number(price).toFixed(2);
+    },
+
+    validateEmail(email) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      return emailRegex.test(email);
+    },
+
+    async sendTicketsToCustomer() {
+      this.emailValidationError = "";
+      this.emailError = "";
+      this.emailSent = false;
+
+      if (!this.customerEmail) {
+        this.emailValidationError = "Please enter an email address";
+        return;
+      }
+
+      if (!this.validateEmail(this.customerEmail)) {
+        this.emailValidationError = "Please enter a valid email address";
+        return;
+      }
+
+      this.sendingEmail = true;
+
+      try {
+        const token = localStorage.getItem("token");
+
+        await sendTicketsEmail({
+          to: this.customerEmail,
+          routeName: `${this.route?.origin?.name} → ${this.route?.destination?.name}`,
+          travelDate: this.formatDate(),
+          travelTime: this.formatTime(),
+          tickets: this.createdTickets.map(t => ({
+            id: t.id,
+            seatNumber: t.seatNumber,
+            price: t.price,
+            passengerName: this.seatPassengers[t.seatNumber] || 'Guest'
+          })),
+          totalPrice: this.formatPrice(this.total)
+        }, token);
+
+        this.emailSent = true;
+      } catch (error) {
+        console.error("Error sending email:", error);
+        this.emailError = "Failed to send email. Please try again.";
+      } finally {
+        this.sendingEmail = false;
+      }
     }
   }
 };
@@ -591,6 +664,84 @@ export default {
       border-color: $primaryColor;
     }
   }
+}
+
+.emailSection {
+  margin: 24px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.emailInputGroup {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+  max-width: 450px;
+}
+
+.emailInput {
+  flex: 1;
+  height: 48px;
+  padding: 0 16px;
+  border: 2px solid rgba($primaryColor, 0.2);
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 600;
+  background: white;
+
+  &:focus {
+    outline: none;
+    border-color: $primaryColor;
+  }
+
+  &::placeholder {
+    color: #999;
+    font-weight: 500;
+  }
+
+  &.invalid {
+    border-color: #e53935;
+  }
+}
+
+.emailBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, $secondaryColor, $primaryColor);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  padding: 0 24px;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+
+  &:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba($primaryColor, 0.3);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+.emailErrorMsg {
+  color: #e53935;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.emailSuccessMsg {
+  color: $secondaryColor;
+  font-size: 13px;
+  font-weight: 700;
 }
 
 .newSaleBtn,

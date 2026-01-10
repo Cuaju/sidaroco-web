@@ -54,6 +54,12 @@ const routes = [
     meta: { requiresAuth: true, role: "Cashier" }
   },
   {
+    path: "/cashier/sales",
+    name: "cashierSales",
+    component: () => import("@/views/cashierSales.vue"),
+    meta: { requiresAuth: true, role: "Cashier" }
+  },
+  {
     path: "/",
     component: RouteManagerLayout,
     meta: {

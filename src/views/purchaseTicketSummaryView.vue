@@ -53,6 +53,20 @@
             </div>
           </div>
 
+          <div class="emailSection">
+            <button class="emailBtn" @click="sendTicketsToEmail" :disabled="sendingEmail">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2">
+                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                <polyline points="22,6 12,13 2,6" />
+              </svg>
+              <span v-if="sendingEmail">Sending...</span>
+              <span v-else-if="emailSent">Email Sent!</span>
+              <span v-else>Send Tickets to My Email</span>
+            </button>
+            <p v-if="emailError" class="emailErrorMsg">{{ emailError }}</p>
+          </div>
+
           <button class="backBtn" @click="goToTrips">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
               stroke="currentColor" stroke-width="2">
@@ -227,7 +241,7 @@
 import ClientLayout from "../layouts/clientLayout.vue";
 import { getTripById } from "@/services/scheduleApi";
 import { getRouteById } from "@/services/routesApi";
-import { createTicket } from "@/services/ticketsApi";
+import { createTicket, sendTicketsEmail } from "@/services/ticketsApi";
 
 function parseJwt(token) {
   try {
@@ -254,7 +268,10 @@ export default {
       route: null,
       user: null,
       selectedSeats: [],
-      createdTickets: []
+      createdTickets: [],
+      sendingEmail: false,
+      emailSent: false,
+      emailError: ""
     };
   },
   computed: {
@@ -362,6 +379,40 @@ export default {
     formatPrice(price) {
       if (price === null || price === undefined) return "0.00";
       return Number(price).toFixed(2);
+    },
+    async sendTicketsToEmail() {
+      this.sendingEmail = true;
+      this.emailError = "";
+
+      try {
+        const token = localStorage.getItem("token");
+        const userEmail = this.user?.email;
+
+        if (!userEmail) {
+          this.emailError = "No email found for your account";
+          return;
+        }
+
+        await sendTicketsEmail({
+          to: userEmail,
+          routeName: `${this.route?.origin?.name} → ${this.route?.destination?.name}`,
+          travelDate: this.formatDate(),
+          travelTime: this.formatTime(),
+          tickets: this.createdTickets.map(t => ({
+            id: t.id,
+            seatNumber: t.seatNumber,
+            price: t.price
+          })),
+          totalPrice: this.totalAmount
+        }, token);
+
+        this.emailSent = true;
+      } catch (error) {
+        console.error("Error sending email:", error);
+        this.emailError = "Failed to send email. Please try again.";
+      } finally {
+        this.sendingEmail = false;
+      }
     }
   }
 };
@@ -487,6 +538,46 @@ export default {
   font-weight: 800;
   font-size: 18px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.emailSection {
+  margin: 24px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.emailBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: linear-gradient(135deg, $secondaryColor, $primaryColor);
+  color: white;
+  border: none;
+  border-radius: 14px;
+  padding: 14px 28px;
+  font-size: 15px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 16px rgba($primaryColor, 0.3);
+
+  &:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 24px rgba($primaryColor, 0.4);
+  }
+
+  &:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+  }
+}
+
+.emailErrorMsg {
+  color: #e53935;
+  font-size: 13px;
+  font-weight: 600;
 }
 
 .backBtn {

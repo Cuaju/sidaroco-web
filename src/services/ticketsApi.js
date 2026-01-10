@@ -131,3 +131,53 @@ export async function getMonthlyReportByRoute(year, month, routeId, token) {
 
   return data;
 }
+
+export async function sendTicketsEmail(emailData, token) {
+  const MAIL_API = import.meta.env.VITE_MAIL_API_URL || import.meta.env.VITE_TICKET_API_URL;
+  
+  const res = await fetch(`${MAIL_API}/mail/send`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      to: emailData.to,
+      subject: `Your SIDAROCO Tickets - ${emailData.routeName}`,
+      template: "ticket",
+      context: {
+        routeName: emailData.routeName,
+        travelDate: emailData.travelDate,
+        travelTime: emailData.travelTime,
+        tickets: emailData.tickets,
+        passengerName: emailData.passengerName || "Guest",
+        totalPrice: emailData.totalPrice
+      }
+    }),
+  });
+
+  const data = await res.json().catch(() => ({}));
+
+  if (!res.ok) {
+    throw new Error(data.message || "Error sending email");
+  }
+
+  return data;
+}
+
+export async function getCashierSales(token) {
+  const res = await fetch(`${TICKETS_API}/tickets/user/CASHIER_SALE`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+  });
+
+  const data = await res.json().catch(() => ({}));
+
+  if (!res.ok) {
+    throw new Error(data.message || "Error fetching cashier sales");
+  }
+
+  return data;
+}
