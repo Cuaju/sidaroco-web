@@ -2,10 +2,25 @@
   <ClientLayout>
     <section class="hero">
       <div class="heroInner">
+        <button class="backBtn" @click="goHome">
+          ← Back to Home
+        </button>
         <h1>Available schedules</h1>
         <p>Select a departure time</p>
-        <div v-if="selectedDate" class="dateInfo">
-          Schedules for {{ formatDate(selectedDate) }}
+
+        <div class="dateNavigation">
+          <button class="navBtn" @click="previousDay" :disabled="isToday" :class="{ disabled: isToday }">
+            ← Previous
+          </button>
+
+          <div class="dateInfo">
+            <div class="currentDate">{{ formatDate(selectedDate) }}</div>
+            <div v-if="isToday" class="todayBadge">Today</div>
+          </div>
+
+          <button class="navBtn" @click="nextDay">
+            Next →
+          </button>
         </div>
 
         <div class="searchCard">
@@ -18,22 +33,18 @@
           </div>
 
           <div v-else class="schedulesGrid">
-            <div 
-              v-for="schedule in schedules" 
-              :key="schedule.hour" 
-              class="scheduleCard"
-              @click="selectHour(schedule.hour, schedule.tripId)"
-            >
+            <div v-for="schedule in schedules" :key="schedule.hour" class="scheduleCard"
+              @click="selectHour(schedule.hour, schedule.tripId)">
               <div class="scheduleTime">
                 <div class="hourDisplay">{{ schedule.hour }}</div>
               </div>
-              
+
               <div class="scheduleDetails">
                 <div class="detailRow">
                   <span class="detailLabel">Price</span>
                   <span class="detailValue price">${{ routePrice.toFixed(2) }}</span>
                 </div>
-                
+
                 <div class="detailRow">
                   <span class="detailLabel">Available seats</span>
                   <span class="detailValue seats" :class="{ 'lowSeats': schedule.availableSeats < 10 }">
@@ -71,73 +82,184 @@ export default {
       schedules: [],
       routePrice: 0,
       selectedDate: null,
-      loading: true
+      loading: true,
+      routeId: null
     };
   },
-  async mounted() {
-    try {
-      const { routeId, date } = this.$route.query;
-      const token = localStorage.getItem("token");
-
-      this.selectedDate = date;
-      this.loading = true;
-
-      const route = await getRouteById(routeId);
-      this.routePrice = route.ticketPrice || 0;
-
-      const rawSchedules = await getAvailableSchedules(routeId, date, token);
-
-      this.schedules = await Promise.all(
-        rawSchedules.map(async (schedule) => {
-          try {
-            const trip = await selectSchedule(routeId, date, schedule.hour, token);
-            
-            const tripDetails = await getTripById(trip.id);
-            const bus = await getBusById(tripDetails.busId);
-            
-            const tickets = await getTicketsByTrip(trip.id, token);
-            const occupiedSeats = tickets.length;
-            const availableSeats = bus.capacity - occupiedSeats;
-
-            return {
-              hour: schedule.hour,
-              tripId: trip.id,
-              totalSeats: bus.capacity,
-              availableSeats: availableSeats
-            };
-          } catch (error) {
-            console.error(`Error loading schedule ${schedule.hour}:`, error);
-            return {
-              hour: schedule.hour,
-              tripId: null,
-              totalSeats: 0,
-              availableSeats: 0
-            };
-          }
-        })
-      );
-
-      this.loading = false;
-    } catch (error) {
-      console.error("Error loading schedules:", error);
-      this.schedules = [];
-      this.loading = false;
+  computed: {
+    isToday() {
+      const today = new Date().toISOString().slice(0, 10);
+      return this.selectedDate === today;
     }
   },
+  async mounted() {
+    const { routeId, date } = this.$route.query;
+    this.routeId = routeId;
+    this.selectedDate = date || this.formatDateToISO(this.getNowUtcMinus6());
+
+    await this.loadSchedules();
+  },
+  watch: {
+    "$route.query.date"(newDate) {
+      if (!newDate || newDate === this.selectedDate) return;
+
+      this.selectedDate = newDate;
+      this.loadSchedules();
+    },
+    selectedDate() {
+      this.loadSchedules();
+    }
+  },
+
   methods: {
+    goHome() {
+      this.$router.push({ name: "home" });
+    },
+    getNowUtcMinus6() {
+      const now = new Date();
+      return new Date(now.getTime() - 6 * 60 * 60 * 1000);
+    },
+    formatDateToISO(date) {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    },
+
+    getCurrentTime() {
+      const now = new Date();
+      const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      return `${hours}:${minutes}`;
+    },
+
+    isScheduleInFuture(scheduleHour) {
+      const now = new Date();
+      const currentTimeInMinutes = now.getHours() * 60 + now.getMinutes();
+
+      const [h, m] = scheduleHour.split(":").map(Number);
+      const scheduleTimeInMinutes = h * 60 + m;
+
+      console.log("NOW (LOCAL):", currentTimeInMinutes);
+      console.log("SCHEDULE:", scheduleHour, scheduleTimeInMinutes);
+
+      return scheduleTimeInMinutes > currentTimeInMinutes;
+    },
+
+    async loadSchedules() {
+      try {
+        const token = localStorage.getItem("token");
+        this.loading = true;
+
+        const route = await getRouteById(this.routeId);
+        this.routePrice = route.ticketPrice || 0;
+
+        const rawSchedules = await getAvailableSchedules(
+          this.routeId,
+          this.selectedDate,
+          token
+        );
+
+        console.log("RAW SCHEDULES FROM API:", rawSchedules);
+
+        const filteredSchedules = rawSchedules
+          .filter(schedule => this.isScheduleInFuture(schedule.hour))
+          .sort((a, b) => {
+            const [ah, am] = a.hour.split(":").map(Number);
+            const [bh, bm] = b.hour.split(":").map(Number);
+            return ah * 60 + am - (bh * 60 + bm);
+          });
+
+        console.log("FILTERED + SORTED SCHEDULES:", filteredSchedules);
+
+        this.schedules = await Promise.all(
+          filteredSchedules.map(async (schedule) => {
+            try {
+              const trip = await selectSchedule(
+                this.routeId,
+                this.selectedDate,
+                schedule.hour,
+                token
+              );
+
+              const tripDetails = await getTripById(trip.id);
+              const bus = await getBusById(tripDetails.busId);
+
+              const tickets = await getTicketsByTrip(trip.id, token);
+              const occupiedSeats = tickets.length;
+              const availableSeats = bus.capacity - occupiedSeats;
+
+              return {
+                hour: schedule.hour,
+                tripId: trip.id,
+                totalSeats: bus.capacity,
+                availableSeats: availableSeats
+              };
+            } catch (error) {
+              console.error(`Error loading schedule ${schedule.hour}:`, error);
+              return {
+                hour: schedule.hour,
+                tripId: null,
+                totalSeats: 0,
+                availableSeats: 0
+              };
+            }
+          })
+        );
+
+        this.loading = false;
+      } catch (error) {
+        console.error("Error loading schedules:", error);
+        this.schedules = [];
+        this.loading = false;
+      }
+    },
+
+    previousDay() {
+      if (this.isToday) return;
+
+      const currentDate = new Date(this.selectedDate + "T00:00:00");
+      currentDate.setDate(currentDate.getDate() - 1);
+
+      const today = this.getNowUtcMinus6();
+      today.setHours(0, 0, 0, 0);
+
+      if (currentDate.getTime() < today.getTime()) return;
+
+      this.selectedDate = this.formatDateToISO(currentDate);
+      this.updateRouteAndLoad();
+    },
+
+    nextDay() {
+      const currentDate = new Date(this.selectedDate + "T00:00:00");
+      currentDate.setDate(currentDate.getDate() + 1);
+      this.selectedDate = this.formatDateToISO(currentDate);
+      this.updateRouteAndLoad();
+    },
+
+    updateRouteAndLoad() {
+      this.$router.replace({
+        name: "tripsList",
+        query: {
+          routeId: this.routeId,
+          date: this.selectedDate
+        }
+      });
+    },
+
     formatDate(dateString) {
       if (!dateString) return "";
-      
+
       const [year, month, day] = dateString.split("-").map(Number);
       const date = new Date(year, month - 1, day);
-      
-      const options = { 
-        weekday: 'long', 
-        year: 'numeric', 
-        month: 'long', 
-        day: 'numeric' 
+
+      const options = {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
       };
-      
+
       return date.toLocaleDateString('en-US', options);
     },
 
@@ -153,7 +275,7 @@ export default {
         name: "seatSelection",
         params: { tripId: trip.id },
         query: {
-          date: this.$route.query.date,
+          date: this.selectedDate,
           time: trip.departureTime
         }
       });
@@ -165,6 +287,15 @@ export default {
 <style lang="scss" scoped>
 @use "@/styles/colors" as *;
 @use "sass:color";
+
+.backBtn {
+  margin-bottom: 44px;
+  background: transparent;
+  border: none;
+  color: $thirdColor;
+  font-weight: 800;
+  cursor: pointer;
+}
 
 .hero {
   min-height: calc(100vh - 80px);
@@ -192,13 +323,75 @@ p {
   font-weight: 700;
 }
 
+.dateNavigation {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 20px 0;
+  padding: 16px;
+  background: rgba($fourthColor, 0.12);
+  border-radius: 16px;
+  backdrop-filter: blur(10px);
+}
+
+.navBtn {
+  padding: 12px 24px;
+  background: $fourthColor;
+  color: $primaryColor;
+  border: none;
+  border-radius: 12px;
+  font-weight: 800;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+
+  &:hover:not(.disabled) {
+    background: color.adjust($fourthColor, $lightness: -5%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+  }
+
+  &:active:not(.disabled) {
+    transform: translateY(0);
+  }
+
+  &.disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    background: rgba($fourthColor, 0.6);
+  }
+}
+
 .dateInfo {
+  flex: 1;
   text-align: center;
-  font-size: clamp(14px, 2vw, 16px);
-  opacity: 0.85;
-  margin: 0 0 18px;
-  font-weight: 600;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.currentDate {
+  font-size: clamp(16px, 2.2vw, 20px);
+  font-weight: 900;
+  color: $fourthColor;
   letter-spacing: 0.3px;
+}
+
+.todayBadge {
+  display: inline-block;
+  padding: 4px 12px;
+  background: $secondaryColor;
+  color: $fourthColor;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .searchCard {
@@ -307,9 +500,12 @@ p {
 }
 
 @keyframes pulse {
-  0%, 100% {
+
+  0%,
+  100% {
     opacity: 1;
   }
+
   50% {
     opacity: 0.7;
   }
@@ -332,10 +528,20 @@ p {
 }
 
 @media (max-width: 768px) {
+  .dateNavigation {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .navBtn {
+    width: 100%;
+    padding: 14px 20px;
+  }
+
   .schedulesGrid {
     grid-template-columns: 1fr;
   }
-  
+
   .hourDisplay {
     font-size: 36px;
   }

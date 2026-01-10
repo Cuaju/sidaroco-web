@@ -103,7 +103,13 @@ export default {
     };
   },
   async mounted() {
-    this.routes = await getRoutes({ take: 100 });
+    const routes = await getRoutes({ take: 100 });
+
+    this.routes = routes.sort((a, b) => {
+      const aLabel = `${a.origin.name} -> ${a.destination.name}`.toLowerCase();
+      const bLabel = `${b.origin.name} -> ${b.destination.name}`.toLowerCase();
+      return aLabel.localeCompare(bLabel);
+    });
   },
   methods: {
     async loadReport() {

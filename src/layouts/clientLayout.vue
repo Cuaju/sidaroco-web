@@ -12,7 +12,7 @@
         <RouterLink class="navLink" to="/myTrips">My trips</RouterLink>
       </nav>
 
-      <UserMenu :userName="user?.name ?? 'User'" :avatar="user?.name?.charAt(0).toUpperCase() ?? 'U'" />
+      <UserMenu :userName="user?.username ?? 'Username'" :avatar="user?.username?.charAt(0).toUpperCase() ?? 'U'" />
 
     </header>
 
@@ -33,9 +33,12 @@ export default {
   components: { UserMenu },
   computed: {
     user() {
-      const raw = localStorage.getItem("user");
-      return raw ? JSON.parse(raw) : null;
-    },
+      const token = localStorage.getItem("token");
+      if (!token) return null;
+
+      const payload = JSON.parse(atob(token.split(".")[1]));
+      return { username: payload.username };
+    }
   },
 };
 </script>

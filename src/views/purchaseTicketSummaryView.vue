@@ -44,10 +44,10 @@
 
           <div class="ticketInfo">
             <div class="ticketNumbers">
-              <div class="label">Ticket Numbers</div>
+              <div class="label">Selected seat numbers</div>
               <div class="numbers">
-                <span v-for="ticket in createdTickets" :key="ticket.id" class="ticketChip">
-                  #{{ ticket.id }}
+                <span v-for="ticket in createdTickets" :key="ticket.seatNumber" class="ticketChip">
+                  #{{ ticket.seatNumber }}
                 </span>
               </div>
             </div>
@@ -94,6 +94,100 @@
                   <span class="infoValue">{{ formatTime(trip?.departureTime) }}</span>
                 </div>
               </div>
+            </div>
+            <div class="summaryCard">
+              <div class="cardHeader">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                  <circle cx="12" cy="7" r="4" />
+                </svg>
+                <h2>Passenger Information</h2>
+              </div>
+
+              <div class="infoGrid">
+                <div class="infoItem">
+                  <span class="infoLabel">Name</span>
+                  <span class="infoValue">{{ user?.username }}</span>
+                </div>
+                <div class="infoItem">
+                  <span class="infoLabel">Email</span>
+                  <span class="infoValue">{{ user?.email }}</span>
+                </div>
+              </div>
+            </div>
+            <div class="summaryCard amenitiesCard">
+              <div class="cardHeader">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2">
+                  <path
+                    d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z" />
+                </svg>
+                <h2>Bus Amenities</h2>
+              </div>
+              <div class="amenitiesList">
+                <div class="amenityItem">
+                  <span class="amenityIcon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"
+                      stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M5 9.5c4.7-4 9.3-4 14 0" />
+                      <path d="M8.5 12.5c2.8-2.5 4.2-2.5 7 0" />
+                      <path d="M12 16h.01" />
+                    </svg>
+                  </span>
+                  <span>WiFi</span>
+                </div>
+
+                <div class="amenityItem">
+                  <span class="amenityIcon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true">
+                      <path
+                        d="M19.335 15.268l2.485 1.405-.492.871-2.467-1.395-.267 2.492-.994-.108.313-2.92L13 12.836v6.04l2.602 1.033-.369.93L13 19.952V22h-1v-2.048l-2.233.887-.369-.93L12 18.876v-6.04l-4.913 2.777.313 2.92-.994.108-.267-2.492-2.467 1.395-.492-.871 2.485-1.405-1.962-1.581.628-.78 2.271 1.832 4.882-2.76-4.881-2.758-2.272 1.832-.628-.78 1.963-1.582L3.18 7.286l.492-.871L6.139 7.81l.267-2.491.994.108-.312 2.919L12 11.123V5.124L9.398 4.091l.369-.93L12 4.048V2h1v2.048l2.233-.887.369.93L13 5.124v5.999l5.195-2.937-.296-2.759.995-.108.249 2.331 2.185-1.235.492.871-2.185 1.235 1.869 1.417-.605.796-2.212-1.677-5.171 2.922 4.882 2.76 2.271-1.832.628.78-1.962 1.581z" />
+                    </svg>
+                  </span>
+                  <span>Air Conditioning</span>
+                </div>
+
+                <div class="amenityItem">
+                  <span class="amenityIcon" aria-hidden="true">
+                    <svg viewBox="0 0 17 17" width="20" height="20" fill="currentColor" aria-hidden="true">
+                      <path
+                        d="M13.074 3.098v1.84h.968V6.46l-4.135 1.52V2.93L12 2.921 9.542 0 7.031 2.959h2.058v7.566L4.959 9.426V7.92A1.5 1.5 0 1 0 4.035 7.918V10l5.054 1.585v1.479A1.5 1.5 0 1 0 9.907 13.062V9.01l5.04-1.949V4.937h.97V3.097h-2.843z" />
+                    </svg>
+                  </span>
+                  <span>USB Charging</span>
+                </div>
+
+                <div class="amenityItem">
+                  <span class="amenityIcon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5"
+                      stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                      <path
+                        d="M22.5 20V22C22.5 22.5523 22.0523 23 21.5 23H7.59646C6.66266 23 5.85314 22.3538 5.64619 21.4432L1.27764 2.22162C1.13542 1.59586 1.61105 1 2.25277 1H5.70799C6.17204 1 6.57512 1.31925 6.6814 1.77096L10.5 18H20.5C21.6046 18 22.5 18.8954 22.5 20Z" />
+                      <path d="M6.96729 3H9C9.55228 3 10 3.44772 10 4V6L8 7.5" />
+                      <path d="M13.5 14.375H9.625H7.5" />
+                    </svg>
+                  </span>
+                  <span>Reclining Seats</span>
+                </div>
+
+                <div class="amenityItem">
+                  <span class="amenityIcon" aria-hidden="true">
+                    <svg viewBox="0 0 512 512" width="20" height="20" fill="currentColor" aria-hidden="true">
+                      <path
+                        d="M130.6 96.4c26.6 0 48.2-21.6 48.2-48.2S157.2 0 130.6 0 82.4 21.6 82.4 48.2s21.6 48.2 48.2 48.2z" />
+                      <path
+                        d="M172.4 119.3H87.9c-23.4 0-48.8 25.4-48.8 48.8v162.1c0 11.7 9.5 21.1 21.1 21.1h14.8l8 138.2c0 12.4 10.1 22.5 22.5 22.5h49.2c12.4 0 22.5-10.1 22.5-22.5l8-138.2h14.8c11.7 0 21.1-9.5 21.1-21.1V168.1c0-23.4-25.4-48.8-48.8-48.8z" />
+                      <path
+                        d="M356.7 96.4c26.6 0 48.2-21.6 48.2-48.2S383.3 0 356.7 0s-48.2 21.6-48.2 48.2 21.6 48.2 48.2 48.2z" />
+                      <path
+                        d="M471.6 376.9l-50-117.5 16.6-83.9c1.7-31.8-22.2-55.7-45.6-55.7h-71.9c-23.4 0-47.3 23.9-45.6 55.7l16.6 83.9-50 117.5c-2.2 5.3-1.7 11.3 1.5 16.1s8.5 7.7 14.2 7.7h52.7l13.6 92.5c0 9.1 7.4 16.4 16.4 16.4h32.9c9.1 0 16.4-7.4 16.4-16.4l13.6-92.5h52.7c5.7 0 11.1-2.9 14.2-7.7 3.2-4.8 3.7-10.8 1.5-16.1z" />
+                    </svg>
+                  </span>
+                  <span>Restroom</span>
+                </div>
+              </div>
+
             </div>
 
             <div class="summaryCard highlight">
@@ -181,6 +275,7 @@ export default {
       }
 
       const decoded = parseJwt(token);
+      console.log("Decoded JWT:", decoded);
       this.user = decoded;
 
       this.selectedSeats = seats ? seats.split(',').map(Number) : [];
@@ -593,4 +688,36 @@ export default {
     cursor: not-allowed;
   }
 }
+
+.amenitiesCard {
+  background: linear-gradient(135deg, rgba($secondaryColor, 0.08), rgba($primaryColor, 0.04));
+  border-color: rgba($secondaryColor, 0.25);
+}
+
+.amenitiesList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.amenityItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: white;
+  padding: 8px 14px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  color: $primaryColor;
+  border: 1px solid rgba($primaryColor, 0.15);
+}
+
+.amenityIcon {
+  display: inline-flex;
+  width: 20px;
+  height: 20px;
+  color: #52525b;
+}
+
 </style>
