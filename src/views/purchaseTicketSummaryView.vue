@@ -397,6 +397,7 @@ export default {
           to: userEmail,
           routeName: `${this.route?.origin?.name} → ${this.route?.destination?.name}`,
           travelDate: this.formatDate(),
+          passengerName: this.user?.username,
           travelTime: this.formatTime(),
           tickets: this.createdTickets.map(t => ({
             id: t.id,
