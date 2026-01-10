@@ -55,11 +55,8 @@
             <div class="thumb" :style="{ backgroundImage: `url(${routePhotoUrl(r) || destinationImage})` }"></div>
 
             <div class="meta">
-              <h3>{{ prettyRouteTitle(r) }}</h3>
-              <p>
-                {{ r.origin?.name }} → {{ r.destination?.name }}
-                · ${{ Number(r.ticketPrice).toFixed(0) }}
-              </p>
+              <h3>{{ r.origin?.name }} → {{ r.destination?.name }}</h3>
+              <p>${{ Number(r.ticketPrice).toFixed(0) }}</p>
             </div>
           </article>
 

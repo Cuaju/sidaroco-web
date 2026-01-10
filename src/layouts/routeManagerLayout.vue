@@ -8,11 +8,11 @@
       </div>
 
       <nav class="nav">
-        <a class="navLink" @click="$router.push('/routes')">Routes</a>
-        <a class="navLink" @click="$router.push('/buses')">Buses</a>
-        <a class="navLink" @click="$router.push('/drivers')">Drivers</a>
-        <a class="navLink" @click="$router.push('/schedule')">Schedule</a>
-      </nav>
+  <RouterLink class="navLink" to="/routes">Routes</RouterLink>
+  <RouterLink class="navLink" to="/buses">Buses</RouterLink>
+  <RouterLink class="navLink" to="/drivers">Drivers</RouterLink>
+  <RouterLink class="navLink" to="/schedule">Schedule</RouterLink>
+</nav>
       <UserMenu userName="Route Manager" avatar="R" />
     </header>
 

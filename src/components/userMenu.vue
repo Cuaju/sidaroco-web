@@ -56,8 +56,8 @@ export default {
     right: 0;
     top: 48px;
 
-    background: rgba($secondaryColor, 0.92);
-    border: 1.5px solid $primaryColor;
+    background: rgba($primaryColor, 0.92);
+    border: 2.5px solid $secondaryColor;
     border-radius: 6px;
 
     padding: 6px;
