@@ -84,7 +84,10 @@ export default {
 
   data() {
     const today = new Date();
-    const yyyyMmDd = today.toISOString().split("T")[0];
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    const yyyyMmDd = `${year}-${month}-${day}`;
     return {
       routes: [],
       origins: [],
@@ -256,10 +259,9 @@ export default {
     },
 
     goRoute(r) {
-
       this.$router.push({
         name: "tripsList",
-        query: { routeId: r.id }
+        query: { routeId: r.id, date: this.today }
       });
     }
   }
