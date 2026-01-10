@@ -401,6 +401,7 @@ export default {
           tickets: this.createdTickets.map(t => ({
             id: t.id,
             seatNumber: t.seatNumber,
+            passengerName: this.user?.username,
             price: t.price
           })),
           totalPrice: this.totalAmount
