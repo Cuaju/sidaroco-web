@@ -88,7 +88,11 @@ export default {
   },
   computed: {
     isToday() {
-      const today = new Date().toISOString().slice(0, 10);
+      const now = new Date();
+      const currentYear = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const day = String(now.getDate()).padStart(2, '0');
+      const today = `${currentYear}-${month}-${day}`;
       return this.selectedDate === today;
     }
   },
@@ -158,17 +162,22 @@ export default {
           this.routeId,
           this.selectedDate,
           token
-        );
-
+        );        
         console.log("RAW SCHEDULES FROM API:", rawSchedules);
 
-        const filteredSchedules = rawSchedules
-          .filter(schedule => this.isScheduleInFuture(schedule.hour))
-          .sort((a, b) => {
-            const [ah, am] = a.hour.split(":").map(Number);
-            const [bh, bm] = b.hour.split(":").map(Number);
-            return ah * 60 + am - (bh * 60 + bm);
-          });
+        let filteredSchedules;
+
+        if (this.isToday) {
+          filteredSchedules = rawSchedules
+            .filter(schedule => this.isScheduleInFuture(schedule.hour))
+            .sort((a, b) => {
+              const [ah, am] = a.hour.split(":").map(Number);
+              const [bh, bm] = b.hour.split(":").map(Number);
+              return ah * 60 + am - (bh * 60 + bm);
+            });
+        } else {
+          filteredSchedules = rawSchedules;
+        }
 
         console.log("FILTERED + SORTED SCHEDULES:", filteredSchedules);
 
