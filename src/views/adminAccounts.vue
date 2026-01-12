@@ -1,6 +1,7 @@
 <script>
 import FinanceManagerLayout from "../layouts/financeManagerLayout.vue";
 import { getAdminAccounts, setAdminActive } from "../services/usersApi";
+import { useAuthStore } from "../stores/authStore";
 
 export default {
   components: { FinanceManagerLayout },
@@ -13,6 +14,12 @@ export default {
   },
   async created() {
     await this.reload();
+  },
+  computed: {
+    currentUserId() {
+      const authStore = useAuthStore();
+      return authStore.account?.id;
+    }
   },
   methods: {
     async reload() {
@@ -29,6 +36,10 @@ export default {
     },
     async toggle(a) {
       this.error = "";
+      if (a.id === this.currentUserId) {
+        this.error = "You cannot disable your own account";
+        return;
+      }
       const next = !a.isActive;
       try {
         await setAdminActive(a.id, next);
@@ -95,7 +106,7 @@ export default {
           </div>
 
           <div class="actions">
-            <button class="btn ghost" @click="toggle(a)">
+            <button class="btn ghost" @click="toggle(a)" :disabled="a.id === currentUserId">
               {{ a.isActive ? "Deactivate" : "Reactivate" }}
             </button>
           </div>
@@ -215,6 +226,15 @@ export default {
 
 .btn.ghost:hover {
   background: rgba(255, 255, 255, .06);
+}
+
+.btn:disabled {
+  opacity: .4;
+  cursor: not-allowed;
+}
+
+.btn.ghost:disabled:hover {
+  background: transparent;
 }
 
 .error {
