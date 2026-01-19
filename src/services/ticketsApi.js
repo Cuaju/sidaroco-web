@@ -159,8 +159,8 @@ export async function sendTicketsEmail(emailData, token) {
   return data;
 }
 
-export async function getCashierSales(token) {
-  const res = await fetch(`${TICKETS_API}/tickets/user/CASHIER_SALE`, {
+export async function getCashierSales(userId, token) {
+  const res = await fetch(`${TICKETS_API}/tickets/user/${userId}`, {
     headers: {
       Authorization: `Bearer ${token}`,
       "Content-Type": "application/json",

@@ -59,6 +59,7 @@ import { getCashierSales } from "@/services/ticketsApi";
 import { getTripsByIds } from "@/services/tripsApi";
 import { getScheduleById } from "@/services/scheduleApi";
 import { getRouteById } from "@/services/routesApi";
+import { useAuthStore } from "@/stores/authStore";
 
 export default {
     components: { CashierLayout },
@@ -151,8 +152,9 @@ export default {
 
             try {
                 const token = localStorage.getItem("token");
+                const authStore = useAuthStore();
 
-                const tickets = await getCashierSales(token);
+                const tickets = await getCashierSales(authStore.account?.id, token);
                 console.log('🎫 Cashier tickets received:', tickets);
 
                 const tripIds = [...new Set(tickets.map(t => t.tripId))];

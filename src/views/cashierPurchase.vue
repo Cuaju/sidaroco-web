@@ -277,6 +277,7 @@ import { getRouteById } from "@/services/routesApi";
 import { createTicket, sendTicketsEmail } from "@/services/ticketsApi";
 import { buildTicketPdf } from "@/utils/ticketPdfBuilder";
 import logoBase64 from "@/assets/images/logoBase64";
+import { useAuthStore } from "@/stores/authStore";
 
 export default {
   components: { CashierLayout },
@@ -347,9 +348,10 @@ export default {
       const { tripId } = this.$route.params;
 
       try {
+        const authStore = useAuthStore();
         const ticketPromises = this.selectedSeats.map(seatNumber =>
           createTicket({
-            userId: "CASHIER_SALE",
+            userId: authStore.account?.id,
             tripId: Number(tripId),
             seatNumber,
             price: this.route.ticketPrice || 0,
