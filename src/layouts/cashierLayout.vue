@@ -10,7 +10,7 @@
 
       <nav class="nav">
         <RouterLink class="navLink" to="/cashier">Sell Ticket</RouterLink>
-        <RouterLink class="navLink" to="/cashier/sales">My Sales</RouterLink>
+        <!-- <RouterLink class="navLink" to="/cashier/sales">My Sales</RouterLink> -->
       </nav>
 
       <UserMenu :userName="user?.name ?? 'Cashier'" :avatar="user?.name?.charAt(0).toUpperCase() ?? 'C'" />
