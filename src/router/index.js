@@ -148,6 +148,11 @@ const routes = [
         component: () => import("@/views/monthlySummaryView.vue"),
       },
       {
+        path: "cashier-cut",
+        name: "cashierDailyCut",
+        component: () => import("@/views/cashierDailyCutView.vue"),
+      },
+      {
         path: "/finance/cashier",
         component: () => import("@/views/cashierMonthlySummaryView.vue")
       },

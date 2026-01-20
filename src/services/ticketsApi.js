@@ -94,6 +94,25 @@ export async function getDailyReport(date, token) {
   return data;
 }
 
+export async function getDailyCashierCut(date, token) {
+  const res = await fetch(
+    `${TICKETS_API}/reports/cashier/daily-cut?date=${date}`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  const data = await res.json().catch(() => ({}));
+
+  if (!res.ok) {
+    throw new Error(data.message || "Error fetching daily cashier cut");
+  }
+
+  return data;
+}
+
 export async function getMonthlyReport(year, month, token) {
   const res = await fetch(
     `${TICKETS_API}/reports/earnings/monthly?year=${year}&month=${month}`,

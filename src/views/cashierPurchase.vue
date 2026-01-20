@@ -253,65 +253,45 @@
                   </button>
                 </div>
                 <div v-if="paymentMethod === 'card'" class="cardSection">
-  <div class="cardRow">
-    <label>Card Number</label>
-    <input
-      type="text"
-      maxlength="16"
-      placeholder="1234123412341234"
-      v-model="cardNumber"
-    />
-  </div>
-
-  <div class="cardGrid">
-    <div class="cardRow">
-      <label>Expiration (MM/YY)</label>
-      <input
-        type="text"
-        maxlength="5"
-        placeholder="08/27"
-        v-model="cardExpiry"
-      />
-    </div>
-
-    <div class="cardRow">
-      <label>CVV</label>
-      <input
-        type="password"
-        maxlength="3"
-        placeholder="123"
-        v-model="cardCvv"
-      />
-    </div>
-  </div>
-</div>
-              <div v-if="paymentMethod === 'cash'" class="cashSection">
-                <div class="cashRow">
-                  <label>Cash received</label>
-                  <input
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    v-model.number="cashGiven"
-                    placeholder="0.00"
-                  />
-                </div>
-
-                <div class="cashSummary">
-                  <div class="cashLine">
-                    <span>Total</span>
-                    <span>${{ formatPrice(total) }}</span>
+                  <div class="cardRow">
+                    <label>Card Number</label>
+                    <input type="text" maxlength="16" placeholder="1234123412341234" v-model="cardNumber" />
                   </div>
 
-                  <div class="cashLine change">
-                    <span>Change</span>
-                    <span>${{ formatPrice(cashChange) }}</span>
+                  <div class="cardGrid">
+                    <div class="cardRow">
+                      <label>Expiration (MM/YY)</label>
+                      <input type="text" maxlength="5" placeholder="08/27" v-model="cardExpiry" />
+                    </div>
+
+                    <div class="cardRow">
+                      <label>CVV</label>
+                      <input type="password" maxlength="3" placeholder="123" v-model="cardCvv" />
+                    </div>
                   </div>
                 </div>
-              </div>
+                <div v-if="paymentMethod === 'cash'" class="cashSection">
+                  <div class="cashRow">
+                    <label>Cash received</label>
+                    <input type="number" min="0" step="0.01" v-model.number="cashGiven" placeholder="0.00" />
+                  </div>
+
+                  <div class="cashSummary">
+                    <div class="cashLine">
+                      <span>Total</span>
+                      <span>${{ formatPrice(total) }}</span>
+                    </div>
+
+                    <div class="cashLine change">
+                      <span>Change</span>
+                      <span>${{ formatPrice(cashChange) }}</span>
+                    </div>
+                  </div>
+                </div>
                 <div class="actions">
                   <button class="cancelBtn" @click="goBack">Cancel</button>
-                  <button class="confirmBtn" @click="processSale" :disabled="processing || !paymentMethod || !cashIsEnough ||  !cardIsValid">
+                  <button class="confirmBtn" @click="processSale"
+                    :disabled="processing || !paymentMethod || !cashIsEnough || !cardIsValid">
                     <span v-if="processing">Processing...</span>
                     <span v-else>Complete Sale</span>
                   </button>
@@ -362,34 +342,34 @@ export default {
   },
 
   computed: {
-  subtotal() {
-    const price = this.route?.ticketPrice || 0;
-    return price * this.selectedSeats.length;
-  },
-  iva() {
-    return this.subtotal * 0.16;
-  },
-  total() {
-    return this.subtotal + this.iva;
-  },
-  cashChange() {
-    if (this.paymentMethod !== "cash") return 0;
-    return Math.max(this.cashGiven - this.total, 0);
-  },
-  cashIsEnough() {
-    if (this.paymentMethod !== "cash") return true;
-    return this.cashGiven >= this.total;
-  },
-  cardIsValid() {
-    if (this.paymentMethod !== "card") return true;
+    subtotal() {
+      const price = this.route?.ticketPrice || 0;
+      return price * this.selectedSeats.length;
+    },
+    iva() {
+      return this.subtotal * 0.16;
+    },
+    total() {
+      return this.subtotal + this.iva;
+    },
+    cashChange() {
+      if (this.paymentMethod !== "cash") return 0;
+      return Math.max(this.cashGiven - this.total, 0);
+    },
+    cashIsEnough() {
+      if (this.paymentMethod !== "cash") return true;
+      return this.cashGiven >= this.total;
+    },
+    cardIsValid() {
+      if (this.paymentMethod !== "card") return true;
 
-    return (
-      this.cardNumber.length === 16 &&
-      this.cardExpiry.length === 5 &&
-      this.cardCvv.length === 3
-    );
-  }
-},
+      return (
+        this.cardNumber.length === 16 &&
+        this.cardExpiry.length === 5 &&
+        this.cardCvv.length === 3
+      );
+    }
+  },
   async mounted() {
     try {
       const { tripId } = this.$route.params;
@@ -424,8 +404,8 @@ export default {
 
       try {
         const authStore = useAuthStore();
-        const ticketPromises = this.selectedSeats.map(seatNumber =>
-          createTicket({
+        const ticketPromises = this.selectedSeats.map(seatNumber => {
+          const payload = {
             userId: authStore.account?.id,
             tripId: Number(tripId),
             seatNumber,
@@ -433,8 +413,21 @@ export default {
             saleDate: new Date().toISOString(),
             passengerName: this.seatPassengers[seatNumber] || 'Guest',
             paymentMethod: this.paymentMethod
-          }, token)
-        );
+          };
+
+          // Add cash payment details
+          if (this.paymentMethod === 'cash') {
+            payload.amountReceived = this.cashGiven;
+            payload.changeGiven = this.cashChange;
+          }
+
+          // Add card payment details (last 4 digits)
+          if (this.paymentMethod === 'card' && this.cardNumber.length >= 4) {
+            payload.cardLast4 = this.cardNumber.slice(-4);
+          }
+
+          return createTicket(payload, token);
+        });
 
         this.createdTickets = await Promise.all(ticketPromises);
         this.success = true;
@@ -1076,7 +1069,9 @@ export default {
     margin-bottom: 20px;
     text-align: center;
   }
-}.cardSection input {
+}
+
+.cardSection input {
   box-sizing: border-box;
   width: 100%;
 }
@@ -1163,6 +1158,7 @@ export default {
     cursor: not-allowed;
   }
 }
+
 .cashSection {
   background: white;
   border-radius: 14px;
@@ -1214,7 +1210,9 @@ export default {
     font-size: 18px;
     color: #0f766e;
   }
-}.cardSection {
+}
+
+.cardSection {
   background: white;
   border-radius: 14px;
   padding: 16px;
@@ -1254,6 +1252,4 @@ export default {
   grid-template-columns: 1fr 1fr;
   gap: 12px;
 }
-
-
 </style>

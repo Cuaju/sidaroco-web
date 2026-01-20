@@ -12,6 +12,7 @@
                 <RouterLink class="navLink" to="/finance/monthly">Monthly</RouterLink>
                 <RouterLink class="navLink" to="/finance/route">By route</RouterLink>
                 <RouterLink class="navLink" to="/finance/cashier">By cashier</RouterLink>
+                <RouterLink class="navLink" to="/finance/cashier-cut">Cashier Cut</RouterLink>
                 <RouterLink class="navLink" to="/finance/adminAccounts">Admin Accouts</RouterLink>
             </nav>
 
