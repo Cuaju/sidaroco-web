@@ -30,32 +30,14 @@
 
         <label class="field">
           <span>Bus ID</span>
-          <input
-            v-model.number="form.id"
-            type="number"
-            placeholder="ID"
-            disabled
-            v-if="isEditing"
-          />
-          <input
-            v-else
-            v-model.number="form.id"
-            type="number"
-            placeholder="ID (auto)"
-            disabled
-          />
+          <input v-model.number="form.id" type="number" placeholder="ID" disabled v-if="isEditing" />
+          <input v-else v-model.number="form.id" type="number" placeholder="ID (auto)" disabled />
         </label>
 
         <label class="field">
           <span>Capacity</span>
-          <input
-            v-model.number="form.capacity"
-            type="number"
-            placeholder="40"
-            min="1"
-            max="60"
-            @blur="touched.capacity = true"
-          />
+          <input v-model.number="form.capacity" type="number" placeholder="40" min="1" max="60"
+            @blur="touched.capacity = true" />
           <p v-if="capacityError" class="fieldError">{{ capacityError }}</p>
         </label>
 
@@ -154,7 +136,7 @@ const touched = ref({
   status: false,
 });
 
-// El vin son 17 caracteres alfanuméricos sin I, O, Q
+// VIN is 17 alphanumeric characters without I, O, Q
 const vinRegex = /^[A-HJ-NPR-Z0-9]{17}$/i;
 
 // Plaac mexa: ABC-12-34, ABC-123-A, 123-ABC, etc.
@@ -226,15 +208,15 @@ const statusError = computed(() => {
 });
 
 const isValid = computed(() => {
-  const hasRequiredFields = 
+  const hasRequiredFields =
     form.value.name &&
     form.value.model &&
     form.value.vin &&
     form.value.plateNumber &&
     form.value.capacity &&
     form.value.status;
-  
-  const noErrors = 
+
+  const noErrors =
     !nameError.value &&
     !modelError.value &&
     !vinError.value &&
@@ -242,7 +224,7 @@ const isValid = computed(() => {
     !capacityError.value &&
     !statusError.value &&
     !photoError.value;
-  
+
   return hasRequiredFields && noErrors;
 });
 
@@ -258,14 +240,14 @@ const touchAll = () => {
 const onPhotoChange = async (event) => {
   const file = event.target.files[0];
   photoError.value = "";
-  
+
   if (file) {
     if (!allowedImageTypes.includes(file.type)) {
       photoError.value = "Only JPG, PNG, and WebP images are allowed";
       event.target.value = "";
       return;
     }
-    
+
     const compressedFile = await compressImage(file);
     photoFile.value = compressedFile;
     photoPreview.value = URL.createObjectURL(compressedFile);
@@ -275,7 +257,7 @@ const onPhotoChange = async (event) => {
 const emitSave = () => {
   touchAll();
   if (!isValid.value) return;
-  
+
   const formData = new FormData();
   formData.append("name", form.value.name);
   formData.append("model", form.value.model);

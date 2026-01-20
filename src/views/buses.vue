@@ -6,18 +6,9 @@
       <button class="addBtn" @click="goToCreateBus">Register bus</button>
 
       <div class="filters">
-        <input
-          v-model="idSearch"
-          type="text"
-          class="idInput"
-          placeholder="ID"
-        />
-        <input
-          v-model="searchQuery"
-          type="text"
-          class="searchInput"
-          placeholder="Search by name, license plate, VIN..."
-        />
+        <input v-model="idSearch" type="text" class="idInput" placeholder="ID" />
+        <input v-model="searchQuery" type="text" class="searchInput"
+          placeholder="Search by name, license plate, VIN..." />
         <select v-model="statusFilter" class="filterSelect">
           <option value="">All statuses</option>
           <option value="Activo">Active</option>
@@ -36,13 +27,7 @@
       }}
     </div>
     <div v-else class="busesList">
-      <BusCard
-        v-for="bus in filteredBuses"
-        :key="bus.id"
-        :bus="bus"
-        @delete="removeBus"
-        @edit="goToEditBus"
-      />
+      <BusCard v-for="bus in filteredBuses" :key="bus.id" :bus="bus" @delete="removeBus" @edit="goToEditBus" />
     </div>
   </section>
 </template>
@@ -107,7 +92,7 @@ onMounted(async () => {
   try {
     buses.value = await getAllBuses();
   } catch (err) {
-    console.error("Error cargando camiones", err);
+    console.error("Error loading buses", err);
   } finally {
     loading.value = false;
   }

@@ -8,18 +8,8 @@
       </button>
 
       <div class="filters">
-        <input
-          v-model="idSearch"
-          type="text"
-          class="idInput"
-          placeholder="ID"
-        />
-        <input
-          v-model="searchQuery"
-          type="text"
-          class="searchInput"
-          placeholder="Search by name or license..."
-        />
+        <input v-model="idSearch" type="text" class="idInput" placeholder="ID" />
+        <input v-model="searchQuery" type="text" class="searchInput" placeholder="Search by name or license..." />
         <select v-model="statusFilter" class="filterSelect">
           <option value="">All statuses</option>
           <option value="Activo">Active</option>
@@ -38,13 +28,8 @@
       }}
     </div>
     <div v-else class="driversList">
-      <DriverCard
-        v-for="driver in filteredDrivers"
-        :key="driver.id"
-        :driver="driver"
-        @delete="removeDriver"
-        @edit="goToEditDriver"
-      />
+      <DriverCard v-for="driver in filteredDrivers" :key="driver.id" :driver="driver" @delete="removeDriver"
+        @edit="goToEditDriver" />
     </div>
   </section>
 </template>
@@ -109,7 +94,7 @@ onMounted(async () => {
   try {
     drivers.value = await getAllDrivers();
   } catch (err) {
-    console.error("Error cargando conductores", err);
+    console.error("Error loading drivers", err);
   } finally {
     loading.value = false;
   }
