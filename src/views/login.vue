@@ -41,61 +41,61 @@ export default {
   },
 
   mounted() {
-  mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN;
+    mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN;
 
-  const map = new mapboxgl.Map({
-    container: "map-bg",
-    style: "mapbox://styles/vaomarco052/cmjz71two00j601qn72253yqc",
-    center: [-99.1677, 19.4285],
-    zoom: 17,          
-    pitch: 70,
-    bearing: -20,
-    interactive: false,
-    antialias: true
-  });
-
-  map.on("load", () => {
-    map.getStyle().layers.forEach((layer) => {
-  if (
-    layer.type === "symbol" &&
-    layer.layout?.["text-field"]
-  ) {
-    map.setLayoutProperty(layer.id, "visibility", "none");
-  }
-});
-
-    map.addLayer({
-      id: "3d-buildings",
-      source: "composite",
-      "source-layer": "building",
-      filter: ["==", "extrude", "true"],
-      type: "fill-extrusion",
-      minzoom: 15,
-      paint: {
-        "fill-extrusion-color": "#d8d2c4",
-        "fill-extrusion-height": ["get", "height"],
-        "fill-extrusion-base": ["get", "min_height"],
-        "fill-extrusion-opacity": 0.95
-      }
+    const map = new mapboxgl.Map({
+      container: "map-bg",
+      style: "mapbox://styles/vaomarco052/cmjz71two00j601qn72253yqc",
+      center: [-99.1677, 19.4285],
+      zoom: 17,
+      pitch: 70,
+      bearing: -20,
+      interactive: false,
+      antialias: true
     });
 
-    let zoom = 17;
-    let bearing = -20;
+    map.on("load", () => {
+      map.getStyle().layers.forEach((layer) => {
+        if (
+          layer.type === "symbol" &&
+          layer.layout?.["text-field"]
+        ) {
+          map.setLayoutProperty(layer.id, "visibility", "none");
+        }
+      });
 
-    const animate = () => {
-      if (zoom < 17.5) zoom += 0.0016;
-      bearing += 0.003;
+      map.addLayer({
+        id: "3d-buildings",
+        source: "composite",
+        "source-layer": "building",
+        filter: ["==", "extrude", "true"],
+        type: "fill-extrusion",
+        minzoom: 15,
+        paint: {
+          "fill-extrusion-color": "#d8d2c4",
+          "fill-extrusion-height": ["get", "height"],
+          "fill-extrusion-base": ["get", "min_height"],
+          "fill-extrusion-opacity": 0.95
+        }
+      });
 
-      map.setZoom(zoom);
-      map.setBearing(bearing);
+      let zoom = 17;
+      let bearing = -20;
 
-      requestAnimationFrame(animate);
-    };
+      const animate = () => {
+        if (zoom < 17.5) zoom += 0.0016;
+        bearing += 0.003;
 
-    animate();
-  });
-}
-,
+        map.setZoom(zoom);
+        map.setBearing(bearing);
+
+        requestAnimationFrame(animate);
+      };
+
+      animate();
+    });
+  }
+  ,
 
   methods: {
     touchAll() {
@@ -120,6 +120,8 @@ export default {
           this.$router.push("/finance/daily");
         } else if (auth.account.userType === "Cashier") {
           this.$router.push("/cashier");
+        } else if (auth.account.userType === "Driver") {
+          this.$router.push("/driver");
         } else {
           this.$router.push("/home");
         }

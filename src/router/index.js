@@ -3,6 +3,7 @@ import ClientLayout from "@/layouts/clientLayout.vue";
 import RouteManagerLayout from "@/layouts/routeManagerLayout.vue";
 import FinanceManagerLayout from "@/layouts/financeManagerLayout.vue";
 import CashierLayout from "@/layouts/cashierLayout.vue";
+import DriverLayout from "@/layouts/driverLayout.vue";
 import { useAuthStore } from "@/stores/authStore";
 
 const routes = [
@@ -67,7 +68,7 @@ const routes = [
       role: "RouteManager",
     },
     children: [
-      // Routes (Rutas)
+      // Routes
       {
         path: "routes",
         name: "routes",
@@ -83,7 +84,7 @@ const routes = [
         name: "editRoute",
         component: () => import("@/views/editRouteView.vue"),
       },
-      // Buses (Camiones)
+      // Buses
       {
         path: "buses",
         name: "buses",
@@ -99,7 +100,7 @@ const routes = [
         name: "editBus",
         component: () => import("@/views/editBusView.vue"),
       },
-      // Drivers (Conductores)
+      // Drivers
       {
         path: "drivers",
         name: "drivers",
@@ -115,7 +116,7 @@ const routes = [
         name: "editDriver",
         component: () => import("@/views/editDriverView.vue"),
       },
-      // Schedule (Programación)
+      // Schedule
       {
         path: "schedule",
         name: "schedule",
@@ -162,6 +163,22 @@ const routes = [
       }
     ],
   },
+  // Driver routes
+  {
+    path: "/driver",
+    component: DriverLayout,
+    meta: {
+      requiresAuth: true,
+      role: "Driver",
+    },
+    children: [
+      {
+        path: "",
+        name: "driverHome",
+        component: () => import("@/views/driverTripsView.vue"),
+      },
+    ],
+  },
 
 ];
 
@@ -193,6 +210,10 @@ router.beforeEach((to, from, next) => {
 
     if (auth.account?.userType === "Cashier") {
       return next("/cashier");
+    }
+
+    if (auth.account?.userType === "Driver") {
+      return next("/driver");
     }
 
     return next("/home");
