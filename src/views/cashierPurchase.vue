@@ -242,7 +242,6 @@
                     </svg>
                     <span>Card Payment</span>
                   </button>
-
                   <button class="paymentOption" :class="{ active: paymentMethod === 'cash' }"
                     @click="paymentMethod = 'cash'">
                     <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none"
@@ -253,10 +252,66 @@
                     <span>Cash Payment</span>
                   </button>
                 </div>
+                <div v-if="paymentMethod === 'card'" class="cardSection">
+  <div class="cardRow">
+    <label>Card Number</label>
+    <input
+      type="text"
+      maxlength="16"
+      placeholder="1234123412341234"
+      v-model="cardNumber"
+    />
+  </div>
 
+  <div class="cardGrid">
+    <div class="cardRow">
+      <label>Expiration (MM/YY)</label>
+      <input
+        type="text"
+        maxlength="5"
+        placeholder="08/27"
+        v-model="cardExpiry"
+      />
+    </div>
+
+    <div class="cardRow">
+      <label>CVV</label>
+      <input
+        type="password"
+        maxlength="3"
+        placeholder="123"
+        v-model="cardCvv"
+      />
+    </div>
+  </div>
+</div>
+              <div v-if="paymentMethod === 'cash'" class="cashSection">
+                <div class="cashRow">
+                  <label>Cash received</label>
+                  <input
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    v-model.number="cashGiven"
+                    placeholder="0.00"
+                  />
+                </div>
+
+                <div class="cashSummary">
+                  <div class="cashLine">
+                    <span>Total</span>
+                    <span>${{ formatPrice(total) }}</span>
+                  </div>
+
+                  <div class="cashLine change">
+                    <span>Change</span>
+                    <span>${{ formatPrice(cashChange) }}</span>
+                  </div>
+                </div>
+              </div>
                 <div class="actions">
                   <button class="cancelBtn" @click="goBack">Cancel</button>
-                  <button class="confirmBtn" @click="processSale" :disabled="processing || !paymentMethod">
+                  <button class="confirmBtn" @click="processSale" :disabled="processing || !paymentMethod || !cashIsEnough ||  !cardIsValid">
                     <span v-if="processing">Processing...</span>
                     <span v-else>Complete Sale</span>
                   </button>
@@ -298,23 +353,43 @@ export default {
       sendingEmail: false,
       emailSent: false,
       emailError: "",
-      emailValidationError: ""
+      emailValidationError: "",
+      cashGiven: 0,
+      cardNumber: "",
+      cardExpiry: "",
+      cardCvv: ""
     };
   },
 
   computed: {
-    subtotal() {
-      const price = this.route?.ticketPrice || 0;
-      return price * this.selectedSeats.length;
-    },
-    iva() {
-      return this.subtotal * 0.16;
-    },
-    total() {
-      return this.subtotal + this.iva;
-    }
+  subtotal() {
+    const price = this.route?.ticketPrice || 0;
+    return price * this.selectedSeats.length;
   },
+  iva() {
+    return this.subtotal * 0.16;
+  },
+  total() {
+    return this.subtotal + this.iva;
+  },
+  cashChange() {
+    if (this.paymentMethod !== "cash") return 0;
+    return Math.max(this.cashGiven - this.total, 0);
+  },
+  cashIsEnough() {
+    if (this.paymentMethod !== "cash") return true;
+    return this.cashGiven >= this.total;
+  },
+  cardIsValid() {
+    if (this.paymentMethod !== "card") return true;
 
+    return (
+      this.cardNumber.length === 16 &&
+      this.cardExpiry.length === 5 &&
+      this.cardCvv.length === 3
+    );
+  }
+},
   async mounted() {
     try {
       const { tripId } = this.$route.params;
@@ -1001,7 +1076,11 @@ export default {
     margin-bottom: 20px;
     text-align: center;
   }
+}.cardSection input {
+  box-sizing: border-box;
+  width: 100%;
 }
+
 
 .paymentOptions {
   display: flex;
@@ -1084,4 +1163,97 @@ export default {
     cursor: not-allowed;
   }
 }
+.cashSection {
+  background: white;
+  border-radius: 14px;
+  padding: 16px;
+  border: 2px solid rgba(0, 0, 0, 0.08);
+  margin-bottom: 20px;
+}
+
+.cashRow {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 14px;
+
+  label {
+    font-size: 13px;
+    font-weight: 700;
+    color: #555;
+  }
+
+  input {
+    height: 42px;
+    padding: 0 12px;
+    border-radius: 10px;
+    border: 2px solid #ddd;
+    font-size: 15px;
+    font-weight: 700;
+
+    &:focus {
+      outline: none;
+      border-color: #111;
+    }
+  }
+}
+
+.cashSummary {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.cashLine {
+  display: flex;
+  justify-content: space-between;
+  font-weight: 700;
+  color: #444;
+
+  &.change {
+    font-size: 18px;
+    color: #0f766e;
+  }
+}.cardSection {
+  background: white;
+  border-radius: 14px;
+  padding: 16px;
+  border: 2px solid rgba(0, 0, 0, 0.08);
+  margin-bottom: 20px;
+}
+
+.cardRow {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 14px;
+
+  label {
+    font-size: 13px;
+    font-weight: 700;
+    color: #555;
+  }
+
+  input {
+    height: 42px;
+    padding: 0 12px;
+    border-radius: 10px;
+    border: 2px solid #ddd;
+    font-size: 15px;
+    font-weight: 700;
+
+    &:focus {
+      outline: none;
+      border-color: #111;
+    }
+  }
+}
+
+.cardGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+
 </style>
