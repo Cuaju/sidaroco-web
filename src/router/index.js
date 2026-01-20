@@ -147,6 +147,10 @@ const routes = [
         component: () => import("@/views/monthlySummaryView.vue"),
       },
       {
+        path: "/finance/cashier",
+        component: () => import("@/views/cashierMonthlySummaryView.vue")
+      },
+      {
         path: "adminAccounts",
         name: "viewAdminAccounts",
         component: () => import("@/views/adminAccounts.vue")

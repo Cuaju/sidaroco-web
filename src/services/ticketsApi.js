@@ -175,3 +175,26 @@ export async function getCashierSales(userId, token) {
 
   return data;
 }
+
+export async function getMonthlyReportByCashier(year, month, cashierId, token) {
+  const qs = new URLSearchParams({ year, month });
+  if (cashierId) qs.append("cashierId", cashierId);
+
+  const res = await fetch(
+    `${TICKETS_API}/reports/earnings/monthly/by-cashier?${qs.toString()}`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  const data = await res.json().catch(() => ({}));
+
+  if (!res.ok) {
+    throw new Error(data.message || "Error al obtener reporte por cashier");
+  }
+
+  return data;
+}
+
